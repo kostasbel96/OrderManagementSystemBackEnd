@@ -5,11 +5,10 @@
 Create `application-dev.properties` in `src/main/resources`:
 
 ```properties
-spring.profiles.active=dev
 
 spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:order_management_system}?serverTimezone=UTC
 spring.datasource.username=${MYSQL_USER:orderuser}
-spring.datasource.password=${MYSQL_PASSWORD:1996}
+spring.datasource.password=${MYSQL_PASSWORD:1234}
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 spring.jpa.hibernate.ddl-auto=update
