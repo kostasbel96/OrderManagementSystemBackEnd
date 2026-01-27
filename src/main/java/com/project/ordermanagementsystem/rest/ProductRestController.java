@@ -3,7 +3,6 @@ package com.project.ordermanagementsystem.rest;
 import com.project.ordermanagementsystem.service.ProductService;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.core.mapper.Mapper;
 import com.project.ordermanagementsystem.dto.ProductInsertDTO;
 import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
 import jakarta.validation.Valid;
@@ -11,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +21,6 @@ import java.util.List;
 public class ProductRestController {
 
     private final ProductService productService;
-    private final Mapper mapper;
 
     @PostMapping("products/save")
     public ResponseEntity<ProductReadOnlyDTO> saveProduct(
@@ -48,7 +45,8 @@ public class ProductRestController {
 
     @GetMapping("/products/search")
     public ResponseEntity<List<ProductReadOnlyDTO>> searchProducts(@RequestParam(required = false) String name){
-        return new ResponseEntity<>(productService.searchProducts(name), HttpStatus.OK);
+        List<ProductReadOnlyDTO> responseDto= productService.searchProducts(name);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }

@@ -2,7 +2,7 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.Specifications.ProductSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
-import com.project.ordermanagementsystem.core.mapper.Mapper;
+import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.dto.ProductInsertDTO;
 import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
 import com.project.ordermanagementsystem.model.Product;
@@ -19,13 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Product.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
     private final Mapper mapper;
     private final ProductRepository productRepository;
 
@@ -58,7 +57,7 @@ public class ProductService {
 
         List<Product> products = productRepository.findAll(spec);
 
-        return products.stream().map(mapper::mapToProductReadOnlyDTO).collect(Collectors.toList());
+        return products.stream().map(mapper::mapToProductReadOnlyDTO).toList();
 
     }
 }

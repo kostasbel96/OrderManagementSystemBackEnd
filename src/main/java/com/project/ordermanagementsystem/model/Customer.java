@@ -1,6 +1,5 @@
 package com.project.ordermanagementsystem.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,18 +11,22 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @Getter
 @Setter
-@Table(name = "products")
-public class Product extends AbstractEntity{
+@Table(name = "customers")
+public class Customer extends AbstractEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String name;
 
-    private String description;
+    private String lastName;
 
-    private Integer quantity;
+    private String email;
+
+    @Column(unique = true)
+    private String phoneNumber1;
+
+    private String phoneNumber2;
 
 }
