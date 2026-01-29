@@ -1,6 +1,5 @@
 package com.project.ordermanagementsystem.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,22 +8,20 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "products")
-public class Product extends AbstractEntity{
+@Table(name = "order_items")
+public class OrderItem extends AbstractEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    private String description;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     private Integer quantity;
-
-    public void reduceStock(int quantity){
-        this.quantity = this.quantity - quantity;
-    }
-
 }
