@@ -5,16 +5,17 @@ import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.dto.OrderInsertDTO;
 import com.project.ordermanagementsystem.dto.OrderReadOnlyDTO;
+import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
 import com.project.ordermanagementsystem.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -35,6 +36,22 @@ public class OrderRestController {
 
         OrderReadOnlyDTO orderReadOnlyDTO = orderService.saveOrder(orderInsertDTO);
         return new ResponseEntity<>(orderReadOnlyDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<Page<OrderReadOnlyDTO>> getPaginatedOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size){
+        Page<OrderReadOnlyDTO> ordersPage = orderService.getPaginatedOrders(page, size);
+        return new ResponseEntity<>(ordersPage, HttpStatus.OK);
+    }
+
+    @GetMapping("/orders/search")
+    public ResponseEntity<List<OrderReadOnlyDTO>> searchOrdersByCustomerName(@RequestParam(required = false) String name,
+                                                                             @RequestParam(required = false) String lastName){
+
+        List<OrderReadOnlyDTO> responseDto = orderService.searchOrdersByCustomerName(name, lastName);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }

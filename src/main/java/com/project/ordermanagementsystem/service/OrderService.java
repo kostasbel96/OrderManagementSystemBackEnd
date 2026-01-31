@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
+import com.project.ordermanagementsystem.core.Specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.dto.*;
@@ -14,10 +15,16 @@ import com.project.ordermanagementsystem.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +69,30 @@ public class OrderService {
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 
         return mapper.mapToOrderReadOnlyDTO(savedOrder);
+
+    }
+
+    @Transactional
+    public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
+        String defaultSort = "id";
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(defaultSort).ascending());
+
+        return orderRepository.findAll(pageable).map(mapper::mapToOrderReadOnlyDTO);
+    }
+
+    @Transactional
+    public List<OrderReadOnlyDTO> searchOrdersByCustomerName(String name,
+                                                            String lastName){
+
+        Specification<Order> spec = Specification
+                .where(OrderSpecification.hasCustomerName(name))
+                .or(OrderSpecification.hasCustomerLastName(lastName));
+
+
+        List<Order> orders = orderRepository.findAll(spec);
+
+        return orders.stream().map(mapper::mapToOrderReadOnlyDTO).toList();
 
     }
 
