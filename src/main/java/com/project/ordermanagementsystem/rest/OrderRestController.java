@@ -52,6 +52,7 @@ public class OrderRestController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    //todo move this to service try-catch
     @GetMapping("/orders/{id}")
     public ResponseEntity<ResponseDTO> getOrderById(@PathVariable Long id){
         OrderReadOnlyDTO order;
@@ -61,7 +62,7 @@ public class OrderRestController {
             responseDto.setOrderReadOnlyDTO(order);
         } catch (AppObjectNotFound e) {
             ErrorResponse errorResponse =
-                    new ErrorResponse(String.format("Order with id %s: %s", id, e.getMessage()));
+                    new ErrorResponse(e.getMessage());
             responseDto.setErrorResponse(errorResponse);
             return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
         }

@@ -2,6 +2,7 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.Specifications.ProductSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
+import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.dto.ProductInsertDTO;
 import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
@@ -59,5 +60,13 @@ public class ProductService {
 
         return products.stream().map(mapper::mapToProductReadOnlyDTO).toList();
 
+    }
+
+    public ProductReadOnlyDTO getProductByName(String name) throws AppObjectNotFound {
+        Product product = productRepository.findByName(name)
+                .orElseThrow(() ->
+                        new AppObjectNotFound("ProductNotFound", String.format("Product with name: %s not found", name))
+                );
+        return mapper.mapToProductReadOnlyDTO(product);
     }
 }
