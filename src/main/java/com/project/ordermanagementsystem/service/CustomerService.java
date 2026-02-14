@@ -2,6 +2,7 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.Specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
+import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
 import com.project.ordermanagementsystem.dto.CustomerReadOnlyDTO;
@@ -65,6 +66,13 @@ public class CustomerService {
 
         return customers.stream().map(mapper::mapToCustomerReadOnlyDTO).toList();
 
+    }
+
+    public CustomerReadOnlyDTO getCustomerById(Long id) throws AppObjectNotFound {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(()-> new AppObjectNotFound("CustomerNotFound","Customer not found"));
+        LOGGER.info("Customer with id: {} found successfully.", customer.getId());
+        return mapper.mapToCustomerReadOnlyDTO(customer);
     }
 
 }

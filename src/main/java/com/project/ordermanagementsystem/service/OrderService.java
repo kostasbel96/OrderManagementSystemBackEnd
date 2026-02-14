@@ -89,11 +89,18 @@ public class OrderService {
                 .where(OrderSpecification.hasCustomerName(name))
                 .or(OrderSpecification.hasCustomerLastName(lastName));
 
-
         List<Order> orders = orderRepository.findAll(spec);
 
         return orders.stream().map(mapper::mapToOrderReadOnlyDTO).toList();
 
+    }
+
+    @Transactional
+    public OrderReadOnlyDTO getOrderById(Long id) throws AppObjectNotFound {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(()-> new AppObjectNotFound("OrderNotFound","Order not found"));
+        LOGGER.info("Order with id: {} found successfully.", order.getId());
+        return mapper.mapToOrderReadOnlyDTO(order);
     }
 
 }

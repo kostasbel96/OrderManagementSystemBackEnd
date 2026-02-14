@@ -3,9 +3,7 @@ package com.project.ordermanagementsystem.rest;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.dto.OrderInsertDTO;
-import com.project.ordermanagementsystem.dto.OrderReadOnlyDTO;
-import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
+import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,4 +52,19 @@ public class OrderRestController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<ResponseDTO> getOrderById(@PathVariable Long id){
+        OrderReadOnlyDTO order;
+        ResponseDTO responseDto = new ResponseDTO();
+        try {
+            order = orderService.getOrderById(id);
+            responseDto.setOrderReadOnlyDTO(order);
+        } catch (AppObjectNotFound e) {
+            ErrorResponse errorResponse =
+                    new ErrorResponse(String.format("Order with id %s: %s", id, e.getMessage()));
+            responseDto.setErrorResponse(errorResponse);
+            return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
 }

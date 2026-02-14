@@ -1,9 +1,12 @@
 package com.project.ordermanagementsystem.rest;
 
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
+import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
 import com.project.ordermanagementsystem.dto.CustomerReadOnlyDTO;
+import com.project.ordermanagementsystem.dto.ErrorResponse;
+import com.project.ordermanagementsystem.dto.ResponseDTO;
 import com.project.ordermanagementsystem.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,21 @@ public class CustomerRestController {
                                                                     @RequestParam(required = false) String lastName){
         List<CustomerReadOnlyDTO> responseDto= customerService.searchCustomers(name, lastName);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/customers/{id}")
+    public ResponseEntity<ResponseDTO> getCustomerById(@PathVariable Long id){
+        ResponseDTO response = new ResponseDTO();
+        try{
+            CustomerReadOnlyDTO customer = customerService.getCustomerById(id);
+            response.setCustomerReadOnlyDTO(customer);
+        } catch(AppObjectNotFound e){
+            ErrorResponse errorResponse =
+                    new ErrorResponse(String.format("Customer with id %s: %s", id, e.getMessage()));
+            response.setErrorResponse(errorResponse);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
