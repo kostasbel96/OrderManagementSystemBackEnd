@@ -96,11 +96,22 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderReadOnlyDTO getOrderById(Long id) throws AppObjectNotFound {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(()-> new AppObjectNotFound("OrderNotFound","Order not found"));
-        LOGGER.info("Order with id: {} found successfully.", order.getId());
-        return mapper.mapToOrderReadOnlyDTO(order);
+    public ResponseDTO getOrderById(Long id) {
+        Order order;
+        ResponseDTO responseDTO = new ResponseDTO();
+        try{
+            order = orderRepository.findById(id)
+                    .orElseThrow(()-> new AppObjectNotFound("OrderNotFound",String.format("Order with id: %s not found", id)));
+            LOGGER.info("Order with id: {} found successfully.", order.getId());
+            responseDTO.setOrderReadOnlyDTO(mapper.mapToOrderReadOnlyDTO(order));
+        } catch (AppObjectNotFound e){
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+        return responseDTO;
+
     }
 
 }

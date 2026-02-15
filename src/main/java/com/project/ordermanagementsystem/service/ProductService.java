@@ -3,6 +3,8 @@ package com.project.ordermanagementsystem.service;
 import com.project.ordermanagementsystem.core.Specifications.ProductSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
+import com.project.ordermanagementsystem.dto.ErrorResponse;
+import com.project.ordermanagementsystem.dto.ResponseDTO;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.dto.ProductInsertDTO;
 import com.project.ordermanagementsystem.dto.ProductReadOnlyDTO;
@@ -62,11 +64,22 @@ public class ProductService {
 
     }
 
-    public ProductReadOnlyDTO getProductByName(String name) throws AppObjectNotFound {
-        Product product = productRepository.findByName(name)
-                .orElseThrow(() ->
-                        new AppObjectNotFound("ProductNotFound", String.format("Product with name: %s not found", name))
-                );
-        return mapper.mapToProductReadOnlyDTO(product);
+    public ResponseDTO getProductByName(String name) {
+        Product product;
+        ResponseDTO responseDTO = new ResponseDTO();
+        try{
+            product = productRepository.findByName(name)
+                    .orElseThrow(() ->
+                            new AppObjectNotFound("ProductNotFound", String.format("Product with name: %s not found", name))
+                    );
+            responseDTO.setProductReadOnlyDTO(mapper.mapToProductReadOnlyDTO(product));
+            LOGGER.info("Product with name: {} found successfully.", product.getName());
+        } catch(AppObjectNotFound e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+        return responseDTO;
     }
 }

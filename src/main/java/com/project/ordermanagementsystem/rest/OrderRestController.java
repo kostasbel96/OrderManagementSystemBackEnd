@@ -52,18 +52,10 @@ public class OrderRestController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    //todo move this to service try-catch
     @GetMapping("/orders/{id}")
     public ResponseEntity<ResponseDTO> getOrderById(@PathVariable Long id){
-        OrderReadOnlyDTO order;
-        ResponseDTO responseDto = new ResponseDTO();
-        try {
-            order = orderService.getOrderById(id);
-            responseDto.setOrderReadOnlyDTO(order);
-        } catch (AppObjectNotFound e) {
-            ErrorResponse errorResponse =
-                    new ErrorResponse(e.getMessage());
-            responseDto.setErrorResponse(errorResponse);
+        ResponseDTO responseDto = orderService.getOrderById(id);
+        if (responseDto.getErrorResponse() != null){
             return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(responseDto, HttpStatus.OK);

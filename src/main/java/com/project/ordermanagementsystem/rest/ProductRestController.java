@@ -49,18 +49,11 @@ public class ProductRestController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    //todo move this to service try-catch
     @GetMapping("/products/{name}")
     public ResponseEntity<ResponseDTO> getProductByName(@PathVariable String name) {
-        ProductReadOnlyDTO product;
-        ResponseDTO responseDto = new ResponseDTO();
-        try {
-            product = productService.getProductByName(name);
-            responseDto.setProductReadOnlyDTO(product);
-        } catch (AppObjectNotFound e) {
-            ErrorResponse errorResponse =
-                    new ErrorResponse(e.getMessage());
-            responseDto.setErrorResponse(errorResponse);
+        ResponseDTO responseDto;
+        responseDto = productService.getProductByName(name);
+        if(responseDto.getErrorResponse() != null){
             return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
