@@ -1,4 +1,4 @@
-package com.project.ordermanagementsystem.core.Specifications;
+package com.project.ordermanagementsystem.core.specifications;
 
 import com.project.ordermanagementsystem.model.Customer;
 import org.springframework.data.jpa.domain.Specification;

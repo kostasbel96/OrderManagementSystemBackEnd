@@ -1,6 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
-import com.project.ordermanagementsystem.core.Specifications.ProductSpecification;
+import com.project.ordermanagementsystem.core.specifications.ProductSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.dto.ErrorResponse;

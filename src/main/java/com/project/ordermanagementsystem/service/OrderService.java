@@ -1,6 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
-import com.project.ordermanagementsystem.core.Specifications.OrderSpecification;
+import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.dto.*;
@@ -82,16 +82,24 @@ public class OrderService {
     }
 
     @Transactional
-    public List<OrderReadOnlyDTO> searchOrdersByCustomerName(String name,
+    public ResponseDTO searchOrdersByCustomerName(String name,
                                                             String lastName){
 
+        ResponseDTO response = new ResponseDTO();
         Specification<Order> spec = Specification
                 .where(OrderSpecification.hasCustomerName(name))
                 .or(OrderSpecification.hasCustomerLastName(lastName));
 
         List<Order> orders = orderRepository.findAll(spec);
+        if (!orders.isEmpty()) {
+            response.setOrderItems(orders.stream().map(mapper::mapToOrderReadOnlyDTO).toList());
+            LOGGER.info("Orders found successfully.");
+            return response;
+        }
 
-        return orders.stream().map(mapper::mapToOrderReadOnlyDTO).toList();
+        response.setErrorResponse(new ErrorResponse("Orders not found."));
+        LOGGER.error("Orders not found.");
+        return response;
 
     }
 

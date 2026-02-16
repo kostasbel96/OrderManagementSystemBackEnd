@@ -45,11 +45,14 @@ public class OrderRestController {
     }
 
     @GetMapping("/orders/search")
-    public ResponseEntity<List<OrderReadOnlyDTO>> searchOrdersByCustomerName(@RequestParam(required = false) String name,
+    public ResponseEntity<ResponseDTO> searchOrdersByCustomerName(@RequestParam(required = false) String name,
                                                                              @RequestParam(required = false) String lastName){
-
-        List<OrderReadOnlyDTO> responseDto = orderService.searchOrdersByCustomerName(name, lastName);
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        ResponseDTO response;
+        response = orderService.searchOrdersByCustomerName(name, lastName);
+        if (response.getErrorResponse() != null){
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/orders/{id}")
