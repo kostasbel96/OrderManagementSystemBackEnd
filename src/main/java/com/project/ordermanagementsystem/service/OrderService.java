@@ -137,28 +137,35 @@ public class OrderService {
 
             existingOrder = orderRepository.findById(dto.getId())
                     .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", String.format("Order with id: %s not found", dto.getId())));
-
-            existingOrder.clearOrderItems();
+            boolean itemsChanged = dto.getItems().stream().anyMatch(dtoItem ->
+                    existingOrder.getItems().stream().noneMatch(existingItem ->
+                            existingItem.getProduct().getId().equals(dtoItem.getProduct().getId()) &&
+                                    existingItem.getQuantity().equals(dtoItem.getQuantity())
+                    )
+            );
             existingOrder.setId(dto.getId());
             existingOrder.setCustomer(mapper.mapToCustomerEntity(dto.getCustomer()));
             existingOrder.setAddress(dto.getAddress());
 
-            for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
-                Product product = productRepository.findById(itemDTO.getProduct().getId())
-                        .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
+            if (itemsChanged) {
+                existingOrder.clearOrderItems();
+                for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
+                    Product product = productRepository.findById(itemDTO.getProduct().getId())
+                            .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
 
-                if (product.getQuantity() >= itemDTO.getQuantity()){
-                    product.reduceStock(itemDTO.getQuantity());
-                } else {
-                    LOGGER.error("Product with id: {} has not enough quantity to place the order.", itemDTO.getProduct().getId());
-                    throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
+                    if (product.getQuantity() >= itemDTO.getQuantity()){
+                        product.reduceStock(itemDTO.getQuantity());
+                    } else {
+                        LOGGER.error("Product with id: {} has not enough quantity to place the order.", itemDTO.getProduct().getId());
+                        throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
+                    }
+
+                    OrderItem item = new OrderItem();
+                    item.setProduct(product);
+                    item.setQuantity(itemDTO.getQuantity());
+
+                    existingOrder.addOrderItem(item);
                 }
-
-                OrderItem item = new OrderItem();
-                item.setProduct(product);
-                item.setQuantity(itemDTO.getQuantity());
-
-                existingOrder.addOrderItem(item);
             }
 
             Order updatedOrder = orderRepository.save(existingOrder);
