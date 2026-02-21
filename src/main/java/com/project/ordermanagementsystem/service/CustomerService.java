@@ -1,15 +1,14 @@
 package com.project.ordermanagementsystem.service;
 
+import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
-import com.project.ordermanagementsystem.dto.ErrorResponse;
-import com.project.ordermanagementsystem.dto.ResponseDTO;
+import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.mapper.Mapper;
-import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
-import com.project.ordermanagementsystem.dto.CustomerReadOnlyDTO;
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.repository.CustomerRepository;
+import com.project.ordermanagementsystem.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
 import java.util.List;
 
@@ -30,6 +30,7 @@ public class CustomerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
     private final Mapper mapper;
     private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public CustomerReadOnlyDTO saveCustomer(CustomerInsertDTO dto) throws AppObjectAlreadyExists {
@@ -84,6 +85,41 @@ public class CustomerService {
             response.setErrorResponse(errorResponse);
         }
         return response;
+
+    }
+
+    public ResponseDTO updateCustomer(CustomerUpdateDTO dto, BindingResult bindingResult) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Customer existingCustomer;
+        try {
+            existingCustomer = customerRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("CustomerNotFound", String.format("Customer with id: %s not found.", dto.getId())));
+
+            existingCustomer.setId(dto.getId());
+            existingCustomer.setName(dto.getName());
+            existingCustomer.setLastName(dto.getLastName());
+            existingCustomer.setPhoneNumber1(dto.getPhoneNumber1());
+            existingCustomer.setPhoneNumber2(dto.getPhoneNumber2());
+            existingCustomer.setEmail(dto.getEmail());
+
+            if (bindingResult.hasErrors()){
+                throw new ValidationException(bindingResult);
+            }
+
+            Customer updatedCustomer = customerRepository.save(existingCustomer);
+            responseDTO.setCustomerReadOnlyDTO(mapper.mapToCustomerReadOnlyDTO(updatedCustomer));
+            LOGGER.info("Customer with id: {} updated successfully.", updatedCustomer.getId());
+        } catch(AppObjectNotFound e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        } catch (ValidationException e) {
+            LOGGER.error(e.getMessage());
+            responseDTO.setErrorResponse(new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage()));
+        }
+
+        return responseDTO;
 
     }
 

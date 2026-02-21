@@ -1,6 +1,5 @@
 package com.project.ordermanagementsystem.rest;
 
-import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.ProductService;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
@@ -57,6 +56,18 @@ public class ProductRestController {
             return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/products/update")
+    public ResponseEntity<ResponseDTO> updateProduct(@Valid @RequestBody ProductUpdateDTO dto,
+                                                     BindingResult bindingResult) {
+        ResponseDTO responseDTO;
+        responseDTO = productService.updateProduct(dto, bindingResult);
+
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
 }

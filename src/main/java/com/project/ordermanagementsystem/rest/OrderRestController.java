@@ -63,4 +63,14 @@ public class OrderRestController {
         }
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+
+    @PutMapping("/orders/update")
+    public ResponseEntity<ResponseDTO> updateOrder(@Valid @RequestBody OrderUpdateDTO dto,
+                                                   BindingResult bindingResult) {
+        ResponseDTO responseDTO = orderService.updateOrder(dto, bindingResult);
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
 }

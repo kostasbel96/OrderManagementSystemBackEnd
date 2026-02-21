@@ -40,4 +40,11 @@ public class Order extends AbstractEntity{
         item.setOrder(null);
     }
 
+    public void clearOrderItems() {
+        if (this.items != null) {
+            this.items.forEach(orderItem -> orderItem.setOrder(null));
+            this.items.clear();
+        }
+    }
+
 }

@@ -1,11 +1,10 @@
 package com.project.ordermanagementsystem.rest;
 
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
-import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
 import com.project.ordermanagementsystem.dto.CustomerReadOnlyDTO;
-import com.project.ordermanagementsystem.dto.ErrorResponse;
+import com.project.ordermanagementsystem.dto.CustomerUpdateDTO;
 import com.project.ordermanagementsystem.dto.ResponseDTO;
 import com.project.ordermanagementsystem.service.CustomerService;
 import jakarta.validation.Valid;
@@ -61,6 +60,19 @@ public class CustomerRestController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/customers/update")
+    public ResponseEntity<ResponseDTO> updateCustomer(@Valid @RequestBody CustomerUpdateDTO dto,
+                                                      BindingResult bindingResult) {
+        ResponseDTO responseDTO;
+        responseDTO = customerService.updateCustomer(dto, bindingResult);
+
+        if (responseDTO.getErrorResponse() != null){
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
+import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -118,6 +120,57 @@ public class OrderService {
                     new ErrorResponse(e.getMessage());
             responseDTO.setErrorResponse(errorResponse);
         }
+        return responseDTO;
+
+    }
+
+    @Transactional
+    public ResponseDTO updateOrder(OrderUpdateDTO dto,
+                                   BindingResult bindingResult) {
+        Order existingOrder;
+        ResponseDTO responseDTO = new ResponseDTO();
+
+        try {
+            if (bindingResult.hasErrors()){
+                throw new ValidationException(bindingResult);
+            }
+
+            existingOrder = orderRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", String.format("Order with id: %s not found", dto.getId())));
+
+            existingOrder.clearOrderItems();
+            existingOrder.setId(dto.getId());
+            existingOrder.setCustomer(mapper.mapToCustomerEntity(dto.getCustomer()));
+            existingOrder.setAddress(dto.getAddress());
+
+            for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
+                Product product = productRepository.findById(itemDTO.getProduct().getId())
+                        .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
+
+                if (product.getQuantity() >= itemDTO.getQuantity()){
+                    product.reduceStock(itemDTO.getQuantity());
+                } else {
+                    LOGGER.error("Product with id: {} has not enough quantity to place the order.", itemDTO.getProduct().getId());
+                    throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
+                }
+
+                OrderItem item = new OrderItem();
+                item.setProduct(product);
+                item.setQuantity(itemDTO.getQuantity());
+
+                existingOrder.addOrderItem(item);
+            }
+
+            Order updatedOrder = orderRepository.save(existingOrder);
+            responseDTO.setOrderReadOnlyDTO(mapper.mapToOrderReadOnlyDTO(updatedOrder));
+            LOGGER.info("Order with id: {} updated successfully.", updatedOrder.getId());
+        } catch(AppObjectNotFound | ValidationException | AppObjectInvalidQuantity e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+
         return responseDTO;
 
     }
