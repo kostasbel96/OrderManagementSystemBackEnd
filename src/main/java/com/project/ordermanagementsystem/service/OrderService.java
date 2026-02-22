@@ -74,6 +74,7 @@ public class OrderService {
 
     }
 
+    @Transactional
     public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
         String defaultSort = "id";
 
