@@ -74,7 +74,6 @@ public class OrderService {
 
     }
 
-    @Transactional
     public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
         String defaultSort = "id";
 
@@ -137,18 +136,19 @@ public class OrderService {
 
             existingOrder = orderRepository.findById(dto.getId())
                     .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", String.format("Order with id: %s not found", dto.getId())));
-            boolean itemsChanged = dto.getItems().stream().anyMatch(dtoItem ->
-                    existingOrder.getItems().stream().noneMatch(existingItem ->
-                            existingItem.getProduct().getId().equals(dtoItem.getProduct().getId()) &&
-                                    existingItem.getQuantity().equals(dtoItem.getQuantity())
-                    )
-            );
+
+            boolean itemsChanged = itemsHaveChanged(existingOrder, dto);
+
             existingOrder.setId(dto.getId());
             existingOrder.setCustomer(mapper.mapToCustomerEntity(dto.getCustomer()));
             existingOrder.setAddress(dto.getAddress());
 
             if (itemsChanged) {
-                existingOrder.clearOrderItems();
+                for (OrderItem oldItem : existingOrder.getItems()) {
+                    Product product = oldItem.getProduct();
+                    product.increaseStock(oldItem.getQuantity());
+                }
+                existingOrder.getItems().clear();
                 for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
                     Product product = productRepository.findById(itemDTO.getProduct().getId())
                             .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
@@ -180,6 +180,21 @@ public class OrderService {
 
         return responseDTO;
 
+    }
+
+    private boolean itemsHaveChanged(Order existingOrder, OrderUpdateDTO dto) {
+        return !existingOrder.getItems().stream()
+                .allMatch(existingItem ->
+                        dto.getItems().stream()
+                                .anyMatch(dtoItem ->
+                                        dtoItem.getProduct().getId().equals(existingItem.getProduct().getId()) &&
+                                                dtoItem.getQuantity().equals(existingItem.getQuantity())
+                                )
+                ) || dto.getItems().stream()
+                .anyMatch(dtoItem ->
+                        existingOrder.getItems().stream()
+                                .noneMatch(existingItem -> existingItem.getProduct().getId().equals(dtoItem.getProduct().getId()))
+                );
     }
 
 }

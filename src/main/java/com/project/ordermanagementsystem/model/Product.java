@@ -23,8 +23,20 @@ public class Product extends AbstractEntity{
 
     private Integer quantity;
 
-    public void reduceStock(int quantity){
-        this.quantity = this.quantity - quantity;
+    public void reduceStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
+
+        if (this.quantity < quantity) {
+            throw new IllegalArgumentException("Not enough stock available");
+        }
+
+        this.quantity -= quantity;
+    }
+
+    public void increaseStock(int quantity) {
+        this.quantity = this.quantity + quantity;
     }
 
 }
