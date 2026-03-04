@@ -22,16 +22,24 @@ public class ProductRestController {
     private final ProductService productService;
 
     @PostMapping("products/save")
-    public ResponseEntity<ProductReadOnlyDTO> saveProduct(
+    public ResponseEntity<ResponseDTO> saveProduct(
             @Valid @RequestBody ProductInsertDTO productInsertDTO,
-            BindingResult bindingResult) throws AppObjectAlreadyExists, ValidationException {
+            BindingResult bindingResult){
 
+        ResponseDTO responseDTO = new ResponseDTO();
         if(bindingResult.hasErrors()){
-            throw new ValidationException(bindingResult);
+            responseDTO.setErrorResponse(new ErrorResponse(bindingResult.getFieldErrors()
+                    .getFirst()
+                    .getDefaultMessage()));
+            return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
         }
 
-        ProductReadOnlyDTO productReadOnlyDTO = productService.saveProduct(productInsertDTO);
-        return new ResponseEntity<>(productReadOnlyDTO, HttpStatus.OK);
+        responseDTO = productService.saveProduct(productInsertDTO);
+        if (responseDTO.getErrorResponse() != null){
+            return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @GetMapping("/products")
@@ -64,6 +72,16 @@ public class ProductRestController {
         ResponseDTO responseDTO;
         responseDTO = productService.updateProduct(dto, bindingResult);
 
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/products/delete")
+    public ResponseEntity<ResponseDTO> deleteProduct(@RequestBody ProductUpdateDTO dto) {
+        ResponseDTO responseDTO;
+        responseDTO = productService.deleteProduct(dto);
         if (responseDTO.getErrorResponse() != null) {
             return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
         }

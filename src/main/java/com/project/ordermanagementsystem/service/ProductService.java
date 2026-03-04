@@ -11,10 +11,7 @@ import com.project.ordermanagementsystem.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,24 +28,30 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public ProductReadOnlyDTO saveProduct(ProductInsertDTO productInsertDTO) throws AppObjectAlreadyExists {
+    public ResponseDTO saveProduct(ProductInsertDTO productInsertDTO) {
+        ResponseDTO responseDTO = new ResponseDTO();
         if(productRepository.findByName(productInsertDTO.getName()).isPresent()) {
-            throw new AppObjectAlreadyExists("ProductName", "Product with name " + productInsertDTO.getName() + " already exists.");
+            ErrorResponse errorResponse = new ErrorResponse("Product with name " + productInsertDTO.getName() + " already exists.");
+            responseDTO.setErrorResponse(errorResponse);
+            LOGGER.error(new AppObjectAlreadyExists("ProductName", "Product with name " + productInsertDTO.getName() + " already exists.").getMessage());
+            return responseDTO;
         }
 
         Product product = mapper.mapToProductEntity(productInsertDTO);
         Product savedProduct = productRepository.save(product);
-        return mapper.mapToProductReadOnlyDTO(savedProduct);
+        responseDTO.setProductReadOnlyDTO(mapper.mapToProductReadOnlyDTO(savedProduct));
+        LOGGER.info("Product with name: {} saved successfully.", savedProduct.getName());
+        return responseDTO;
     }
 
 
     @Transactional
     public Page<ProductReadOnlyDTO> getPaginatedProducts(int page, int size){
-        String defaultSort = "id";
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(defaultSort).ascending());
+        return productRepository.findByActiveTrue(pageable)
+                .map(mapper::mapToProductReadOnlyDTO);
 
-        return productRepository.findAll(pageable).map(mapper::mapToProductReadOnlyDTO);
     }
 
     public List<ProductReadOnlyDTO> searchProducts(String name){
@@ -57,7 +60,10 @@ public class ProductService {
                 ProductSpecification.trStringFieldLike("name", name)
         );
 
-        List<Product> products = productRepository.findAll(spec);
+        List<Product> products = productRepository.findAll(spec)
+                .stream()
+                .filter(Product::isActive)
+                .toList();
 
         return products.stream().map(mapper::mapToProductReadOnlyDTO).toList();
 
@@ -113,5 +119,32 @@ public class ProductService {
 
         return responseDTO;
 
+    }
+
+    @Transactional
+    public ResponseDTO deleteProduct(ProductUpdateDTO dto){
+        Product productToDelete;
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            productToDelete = productRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("ProductNotFound",
+                            String.format("Product with id: %s not found.", dto.getId())));
+            if (!productToDelete.getItems().isEmpty()) {
+                productToDelete.setActive(false);
+                productRepository.save(productToDelete);
+            } else {
+                productRepository.delete(productToDelete);
+            }
+            ProductReadOnlyDTO returnedProduct = mapper.mapToProductReadOnlyDTO(productToDelete);
+            responseDTO.setProductReadOnlyDTO(returnedProduct);
+            LOGGER.info("Product with id: {} deleted successfully.", returnedProduct.getId());
+        } catch (AppObjectNotFound e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+
+        return responseDTO;
     }
 }
