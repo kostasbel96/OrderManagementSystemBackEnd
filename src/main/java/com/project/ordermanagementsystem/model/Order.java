@@ -30,6 +30,8 @@ public class Order extends AbstractEntity{
 
     private LocalDateTime date;
 
+    private boolean active = true;
+
     public void addOrderItem(OrderItem item){
         items.add(item);
         item.setOrder(this);

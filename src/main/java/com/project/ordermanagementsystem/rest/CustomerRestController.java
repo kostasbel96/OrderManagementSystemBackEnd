@@ -75,4 +75,14 @@ public class CustomerRestController {
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
+    @DeleteMapping("/customers/delete")
+    public ResponseEntity<ResponseDTO> deleteCustomer(@RequestBody CustomerUpdateDTO dto) {
+        ResponseDTO responseDTO;
+        responseDTO = customerService.deleteCustomer(dto);
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
 }

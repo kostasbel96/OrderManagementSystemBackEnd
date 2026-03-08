@@ -24,10 +24,11 @@ public class Customer extends AbstractEntity{
 
     private String email;
 
-    @Column(unique = true)
     private String phoneNumber1;
 
     private String phoneNumber2;
+
+    private boolean active = true;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();

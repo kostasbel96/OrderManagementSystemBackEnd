@@ -76,16 +76,14 @@ public class OrderService {
 
     @Transactional
     public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
-        String defaultSort = "id";
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(defaultSort).ascending());
-
-        return orderRepository.findAll(pageable).map(mapper::mapToOrderReadOnlyDTO);
+        return orderRepository.findByActiveTrue(pageable)
+                .map(mapper::mapToOrderReadOnlyDTO);
     }
 
     @Transactional
-    public ResponseDTO searchOrdersByCustomerName(String name,
-                                                            String lastName){
+    public ResponseDTO searchOrdersByCustomerName(String name, String lastName){
 
         ResponseDTO response = new ResponseDTO();
         Specification<Order> spec = Specification
@@ -181,6 +179,33 @@ public class OrderService {
 
         return responseDTO;
 
+    }
+
+    @Transactional
+    public ResponseDTO deleteOrder(OrderUpdateDTO dto) {
+        Order orderToDelete;
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            orderToDelete = orderRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound",
+                            String.format("Order with id: %s not found.", dto.getId())));
+            if (!orderToDelete.getItems().isEmpty()) {
+                orderToDelete.setActive(false);
+                orderRepository.save(orderToDelete);
+            } else {
+                orderRepository.delete(orderToDelete);
+            }
+            OrderReadOnlyDTO returnedOrder = mapper.mapToOrderReadOnlyDTO(orderToDelete);
+            responseDTO.setOrderReadOnlyDTO(returnedOrder);
+            LOGGER.info("Order with id: {} deleted successfully.", returnedOrder.getId());
+        } catch (AppObjectNotFound e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+
+        return responseDTO;
     }
 
     private boolean itemsHaveChanged(Order existingOrder, OrderUpdateDTO dto) {

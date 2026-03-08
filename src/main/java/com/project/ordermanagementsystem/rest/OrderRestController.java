@@ -73,4 +73,14 @@ public class OrderRestController {
         }
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
+
+    @DeleteMapping("/orders/delete")
+    public ResponseEntity<ResponseDTO> deleteOrder(@RequestBody OrderUpdateDTO dto) {
+        ResponseDTO responseDTO;
+        responseDTO = orderService.deleteOrder(dto);
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
 }

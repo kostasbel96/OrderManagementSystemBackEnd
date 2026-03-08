@@ -16,6 +16,7 @@ public class ResponseDTO {
     @JsonProperty("orderItem")
     OrderReadOnlyDTO orderReadOnlyDTO;
     ErrorResponse errorResponse;
+    @JsonProperty("customer")
     CustomerReadOnlyDTO customerReadOnlyDTO;
     @JsonProperty("productDto")
     ProductReadOnlyDTO productReadOnlyDTO;

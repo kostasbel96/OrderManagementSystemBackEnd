@@ -34,9 +34,12 @@ public class CustomerService {
 
     @Transactional
     public CustomerReadOnlyDTO saveCustomer(CustomerInsertDTO dto) throws AppObjectAlreadyExists {
-        if (customerRepository.findCustomerByPhoneNumber1(dto.getPhoneNumber1()).isPresent()){
+        if (customerRepository.existsByPhoneNumber1AndActiveTrue(dto.getPhoneNumber1())) {
             LOGGER.error("Customer with phone number: {} already exists.", dto.getPhoneNumber1());
-            throw new AppObjectAlreadyExists("CustomerPhoneNumber1", "Customer with phone number " + dto.getPhoneNumber1() + " already exists.");
+            throw new AppObjectAlreadyExists(
+                    "CustomerPhoneNumber1",
+                    "Customer with phone number " + dto.getPhoneNumber1() + " already exists."
+            );
         }
 
         Customer customer = mapper.mapToCustomerEntity(dto);
@@ -50,11 +53,10 @@ public class CustomerService {
 
     @Transactional
     public Page<CustomerReadOnlyDTO> getPaginatedCustomers(int page, int size){
-        String defaultSort = "id";
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(defaultSort).ascending());
-
-        return customerRepository.findAll(pageable).map(mapper::mapToCustomerReadOnlyDTO);
+        return customerRepository.findByActiveTrue(pageable)
+                .map(mapper::mapToCustomerReadOnlyDTO);
     }
 
     public List<CustomerReadOnlyDTO> searchCustomers(String name, String lastName){
@@ -117,6 +119,34 @@ public class CustomerService {
         } catch (ValidationException e) {
             LOGGER.error(e.getMessage());
             responseDTO.setErrorResponse(new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage()));
+        }
+
+        return responseDTO;
+
+    }
+
+    @Transactional
+    public ResponseDTO deleteCustomer(CustomerUpdateDTO dto) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Customer customerToDelete;
+        try {
+            customerToDelete = customerRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("CustomerNotFound",
+                            String.format("Customer with id: %s not found.", dto.getId())));
+        if (!customerToDelete.getOrders().isEmpty()) {
+            customerToDelete.setActive(false);
+            customerRepository.save(customerToDelete);
+        } else {
+            customerRepository.delete(customerToDelete);
+        }
+        CustomerReadOnlyDTO returnedCustomer = mapper.mapToCustomerReadOnlyDTO(customerToDelete);
+        responseDTO.setCustomerReadOnlyDTO(returnedCustomer);
+        LOGGER.info("Customer with id: {} deleted successfully.", returnedCustomer.getId());
+        } catch (AppObjectNotFound e){
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+            LOGGER.error(e.getMessage());
         }
 
         return responseDTO;
