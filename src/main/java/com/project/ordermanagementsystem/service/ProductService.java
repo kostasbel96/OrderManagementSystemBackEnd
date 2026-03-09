@@ -30,7 +30,7 @@ public class ProductService {
     @Transactional
     public ResponseDTO saveProduct(ProductInsertDTO productInsertDTO) {
         ResponseDTO responseDTO = new ResponseDTO();
-        if(productRepository.findByName(productInsertDTO.getName()).isPresent()) {
+        if(productRepository.existsByNameAndActiveTrue(productInsertDTO.getName())) {
             ErrorResponse errorResponse = new ErrorResponse("Product with name " + productInsertDTO.getName() + " already exists.");
             responseDTO.setErrorResponse(errorResponse);
             LOGGER.error(new AppObjectAlreadyExists("ProductName", "Product with name " + productInsertDTO.getName() + " already exists.").getMessage());
@@ -90,35 +90,47 @@ public class ProductService {
 
     @Transactional
     public ResponseDTO updateProduct(ProductUpdateDTO dto, BindingResult bindingResult) {
+
         Product existingProduct;
         ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            existingProduct = productRepository.findById(dto.getId())
-                    .orElseThrow(() -> new AppObjectNotFound("ProductNotFound", String.format("Product with id: %s not found", dto.getId())));
 
-            existingProduct.setName(dto.getName());
-            existingProduct.setDescription(dto.getDescription());
-            existingProduct.setQuantity(dto.getQuantity());
+        try {
 
             if (bindingResult.hasErrors()) {
                 throw new ValidationException(bindingResult);
             }
 
+            existingProduct = productRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("ProductNotFound",
+                            String.format("Product with id: %s not found", dto.getId())));
+
+            if (!existingProduct.getName().equals(dto.getName()) &&
+                    productRepository.existsByNameAndActiveTrue(dto.getName())) {
+
+                throw new AppObjectAlreadyExists("ProductName",
+                        "Product with name " + dto.getName() + " already exists.");
+            }
+
+            existingProduct.setName(dto.getName());
+            existingProduct.setDescription(dto.getDescription());
+            existingProduct.setQuantity(dto.getQuantity());
+
             Product updatedProduct = productRepository.save(existingProduct);
+
             responseDTO.setProductReadOnlyDTO(mapper.mapToProductReadOnlyDTO(updatedProduct));
+
             LOGGER.info("Product with id: {} updated successfully.", updatedProduct.getId());
-        } catch (AppObjectNotFound e) {
+
+        } catch (AppObjectNotFound | AppObjectAlreadyExists e) {
             LOGGER.error(e.getMessage());
-            ErrorResponse errorResponse =
-                    new ErrorResponse(e.getMessage());
-            responseDTO.setErrorResponse(errorResponse);
-        } catch (ValidationException e){
+            responseDTO.setErrorResponse(new ErrorResponse(e.getMessage()));
+        } catch (ValidationException e) {
             LOGGER.error(e.getMessage());
-            responseDTO.setErrorResponse(new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage()));
+            responseDTO.setErrorResponse(
+                    new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage()));
         }
 
         return responseDTO;
-
     }
 
     @Transactional

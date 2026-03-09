@@ -12,4 +12,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findByName(String name);
     Page<Product> findByActiveTrue(Pageable pageable);
+    boolean existsByNameAndActiveTrue(String phoneNumber1);
 }
