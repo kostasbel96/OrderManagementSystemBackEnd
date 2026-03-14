@@ -16,4 +16,8 @@ public class CustomerSpecification {
         };
     }
 
+    public static Specification<Customer> isActive() {
+        return (root, query, builder) -> builder.isTrue(root.get("active"));
+    }
+
 }

@@ -48,25 +48,29 @@ public class ProductService {
     @Transactional
     public Page<ProductReadOnlyDTO> getPaginatedProducts(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-
-        return productRepository.findByActiveTrue(pageable)
-                .map(mapper::mapToProductReadOnlyDTO);
-
+        Specification<Product> spec = Specification.where(ProductSpecification.isActive());
+        return productRepository.findAll(spec, pageable).map(mapper::mapToProductReadOnlyDTO);
     }
 
-    public List<ProductReadOnlyDTO> searchProducts(String name){
+    public Page<ProductReadOnlyDTO> searchProducts(String name,
+                                                   String sortBy,
+                                                   String sortDirection,
+                                                   int page,
+                                                   int pageSize) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                pageSize,
+                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
+        );
 
         Specification<Product> spec = Specification.where(
                 ProductSpecification.trStringFieldLike("name", name)
-        );
+        ).and(ProductSpecification.isActive());
 
-        List<Product> products = productRepository.findAll(spec)
-                .stream()
-                .filter(Product::isActive)
-                .toList();
+        Page<Product> productPage = productRepository.findAll(spec, pageable);
 
-        return products.stream().map(mapper::mapToProductReadOnlyDTO).toList();
-
+        return productPage.map(mapper::mapToProductReadOnlyDTO);
     }
 
     public ResponseDTO getProductByName(String name) {

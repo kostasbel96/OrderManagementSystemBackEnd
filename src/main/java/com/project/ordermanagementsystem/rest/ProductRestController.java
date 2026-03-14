@@ -51,8 +51,12 @@ public class ProductRestController {
     }
 
     @GetMapping("/products/search")
-    public ResponseEntity<List<ProductReadOnlyDTO>> searchProducts(@RequestParam(required = false) String name){
-        List<ProductReadOnlyDTO> responseDto= productService.searchProducts(name);
+    public ResponseEntity<Page<ProductReadOnlyDTO>> searchProducts(@RequestParam(required = false) String name,
+                                                                   @RequestParam(required = false, defaultValue = "name") String sortBy,
+                                                                   @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+                                                                   @RequestParam(required = false, defaultValue = "0") int page,
+                                                                   @RequestParam(required = false, defaultValue = "5") int pageSize){
+        Page<ProductReadOnlyDTO> responseDto = productService.searchProducts(name, sortBy, sortDirection, page, pageSize);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

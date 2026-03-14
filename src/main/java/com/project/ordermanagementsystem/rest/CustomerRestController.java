@@ -46,9 +46,13 @@ public class CustomerRestController {
     }
 
     @GetMapping("/customers/search")
-    public ResponseEntity<List<CustomerReadOnlyDTO>> searchCustomers(@RequestParam(required = false) String name,
-                                                                    @RequestParam(required = false) String lastName){
-        List<CustomerReadOnlyDTO> responseDto= customerService.searchCustomers(name, lastName);
+    public ResponseEntity<Page<CustomerReadOnlyDTO>> searchCustomers(@RequestParam(required = false) String name,
+                                                                    @RequestParam(required = false) String lastName,
+                                                                     @RequestParam(required = false, defaultValue = "name") String sortBy,
+                                                                     @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+                                                                     @RequestParam(required = false, defaultValue = "0") int page,
+                                                                     @RequestParam(required = false, defaultValue = "5") int pageSize){
+        Page<CustomerReadOnlyDTO> responseDto= customerService.searchCustomers(name, lastName, sortBy, sortDirection, page, pageSize);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

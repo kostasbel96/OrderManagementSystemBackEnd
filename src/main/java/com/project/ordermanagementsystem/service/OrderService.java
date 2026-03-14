@@ -77,29 +77,27 @@ public class OrderService {
     @Transactional
     public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-
-        return orderRepository.findByActiveTrue(pageable)
-                .map(mapper::mapToOrderReadOnlyDTO);
+        Specification<Order> spec = Specification.where(OrderSpecification.isActive());
+        return orderRepository.findAll(spec, pageable).map(mapper::mapToOrderReadOnlyDTO);
     }
 
     @Transactional
-    public ResponseDTO searchOrdersByCustomerName(String name, String lastName){
+    public Page<OrderReadOnlyDTO> searchOrdersByCustomerName(String name, String lastName, String sortBy, String sortDirection, int page, int pageSize){
 
-        ResponseDTO response = new ResponseDTO();
+        Pageable pageable = PageRequest.of(
+                page,
+                pageSize,
+                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
+        );
+
         Specification<Order> spec = Specification
                 .where(OrderSpecification.hasCustomerName(name))
-                .or(OrderSpecification.hasCustomerLastName(lastName));
+                .or(OrderSpecification.hasCustomerLastName(lastName))
+                .and(OrderSpecification.isActive());
 
-        List<Order> orders = orderRepository.findAll(spec);
-        if (!orders.isEmpty()) {
-            response.setOrderItems(orders.stream().map(mapper::mapToOrderReadOnlyDTO).toList());
-            LOGGER.info("Orders found successfully.");
-            return response;
-        }
+        Page<Order> orders = orderRepository.findAll(spec, pageable);
 
-        response.setErrorResponse(new ErrorResponse("Orders not found."));
-        LOGGER.error("Orders not found.");
-        return response;
+        return orders.map(mapper::mapToOrderReadOnlyDTO);
 
     }
 

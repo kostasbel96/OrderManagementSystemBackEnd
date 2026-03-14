@@ -10,8 +10,6 @@ import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSpecificationExecutor<Customer> {
 
-    Optional<Customer> findCustomerByPhoneNumber1(String phoneNumber);
-    Page<Customer> findByActiveTrue(Pageable pageable);
     boolean existsByPhoneNumber1AndActiveTrue(String phoneNumber1);
 
 }

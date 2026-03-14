@@ -2,6 +2,7 @@ package com.project.ordermanagementsystem.core.specifications;
 
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.model.Order;
+import com.project.ordermanagementsystem.model.Product;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -31,6 +32,10 @@ public class OrderSpecification {
 
     public static Specification<Order> hasCustomerLastName(String lastName) {
         return trStringFieldLike("lastName", lastName);
+    }
+
+    public static Specification<Order> isActive() {
+        return (root, query, builder) -> builder.isTrue(root.get("active"));
     }
 
 }
