@@ -27,7 +27,7 @@ public class ProductUpdateDTO {
     private String description;
 
     @NotNull(message = "Quantity is required.")
-    @Min(value = 1, message = "Product quantity must be at least 1.")
+    @Min(value = 0, message = "Product quantity must be at least 0.")
     private Integer quantity;
 
 }
