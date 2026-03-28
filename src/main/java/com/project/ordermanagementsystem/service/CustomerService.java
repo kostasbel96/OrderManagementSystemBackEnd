@@ -52,8 +52,8 @@ public class CustomerService {
     }
 
     @Transactional
-    public Page<CustomerReadOnlyDTO> getPaginatedCustomers(int page, int size){
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+    public Page<CustomerReadOnlyDTO> getPaginatedCustomers(int page, int size, String sortBy, String sortDirection){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Specification<Customer> spec = Specification.where(CustomerSpecification.isActive());
         return customerRepository.findAll(spec, pageable).map(mapper::mapToCustomerReadOnlyDTO);
     }

@@ -40,14 +40,16 @@ public class CustomerRestController {
     @GetMapping("/customers")
     public ResponseEntity<Page<CustomerReadOnlyDTO>> getPaginatedCustomers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size){
-        Page<CustomerReadOnlyDTO> customersPage = customerService.getPaginatedCustomers(page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection){
+        Page<CustomerReadOnlyDTO> customersPage = customerService.getPaginatedCustomers(page, size, sortBy, sortDirection);
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 
     @GetMapping("/customers/search")
     public ResponseEntity<Page<CustomerReadOnlyDTO>> searchCustomers(@RequestParam(required = false) String name,
-                                                                    @RequestParam(required = false) String lastName,
+                                                                     @RequestParam(required = false) String lastName,
                                                                      @RequestParam(required = false, defaultValue = "name") String sortBy,
                                                                      @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
                                                                      @RequestParam(required = false, defaultValue = "0") int page,

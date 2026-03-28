@@ -75,8 +75,8 @@ public class OrderService {
     }
 
     @Transactional
-    public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size){
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+    public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size, String sortBy, String sortDirection){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Specification<Order> spec = Specification.where(OrderSpecification.isActive());
         return orderRepository.findAll(spec, pageable).map(mapper::mapToOrderReadOnlyDTO);
     }

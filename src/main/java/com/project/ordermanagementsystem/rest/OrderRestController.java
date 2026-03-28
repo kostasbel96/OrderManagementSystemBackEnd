@@ -39,8 +39,10 @@ public class OrderRestController {
     @GetMapping("/orders")
     public ResponseEntity<Page<OrderReadOnlyDTO>> getPaginatedOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size){
-        Page<OrderReadOnlyDTO> ordersPage = orderService.getPaginatedOrders(page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false, defaultValue = "date") String sortBy,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection){
+        Page<OrderReadOnlyDTO> ordersPage = orderService.getPaginatedOrders(page, size, sortBy, sortDirection);
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
     }
 

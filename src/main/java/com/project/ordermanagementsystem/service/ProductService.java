@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -46,8 +44,8 @@ public class ProductService {
 
 
     @Transactional
-    public Page<ProductReadOnlyDTO> getPaginatedProducts(int page, int size){
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+    public Page<ProductReadOnlyDTO> getPaginatedProducts(int page, int size, String sortBy, String sortDirection){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Specification<Product> spec = Specification.where(ProductSpecification.isActive());
         return productRepository.findAll(spec, pageable).map(mapper::mapToProductReadOnlyDTO);
     }

@@ -45,8 +45,10 @@ public class ProductRestController {
     @GetMapping("/products")
     public ResponseEntity<Page<ProductReadOnlyDTO>> getPaginatedProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size){
-        Page<ProductReadOnlyDTO> productsPage = productService.getPaginatedProducts(page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection){
+        Page<ProductReadOnlyDTO> productsPage = productService.getPaginatedProducts(page, size, sortBy, sortDirection);
         return new ResponseEntity<>(productsPage, HttpStatus.OK);
     }
 
