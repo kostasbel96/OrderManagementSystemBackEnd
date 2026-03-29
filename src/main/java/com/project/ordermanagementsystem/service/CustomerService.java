@@ -33,22 +33,38 @@ public class CustomerService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public CustomerReadOnlyDTO saveCustomer(CustomerInsertDTO dto) throws AppObjectAlreadyExists {
-        if (customerRepository.existsByPhoneNumber1AndActiveTrue(dto.getPhoneNumber1())) {
-            LOGGER.error("Customer with phone number: {} already exists.", dto.getPhoneNumber1());
-            throw new AppObjectAlreadyExists(
-                    "CustomerPhoneNumber1",
-                    "Customer with phone number " + dto.getPhoneNumber1() + " already exists."
-            );
+    public ResponseDTO saveCustomer(CustomerInsertDTO dto, BindingResult bindingResult) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        ErrorResponse errorResponse;
+
+        try{
+            if(bindingResult.hasErrors()){
+                throw new ValidationException(bindingResult);
+            }
+
+            if (customerRepository.existsByPhoneNumber1AndActiveTrue(dto.getPhoneNumber1())) {
+                LOGGER.error("Customer with phone number: {} already exists.", dto.getPhoneNumber1());
+                throw new AppObjectAlreadyExists(
+                        "CustomerPhoneNumber1",
+                        "Customer with phone number " + dto.getPhoneNumber1() + " already exists."
+                );
+            }
+
+            Customer customer = mapper.mapToCustomerEntity(dto);
+            Customer savedCustomer = customerRepository.save(customer);
+
+            LOGGER.info("Customer with id: {} saved successfully.", savedCustomer.getId());
+             responseDTO.setCustomerReadOnlyDTO(mapper.mapToCustomerReadOnlyDTO(savedCustomer));
+        } catch (AppObjectAlreadyExists e) {
+            LOGGER.error(e.getMessage());
+            errorResponse = new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        } catch (ValidationException e) {
+            LOGGER.error(e.getMessage());
+            errorResponse = new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage());
+            responseDTO.setErrorResponse(errorResponse);
         }
-
-        Customer customer = mapper.mapToCustomerEntity(dto);
-        Customer savedCustomer = customerRepository.save(customer);
-
-        LOGGER.info("Customer with id: {} saved successfully.", savedCustomer.getId());
-
-        return mapper.mapToCustomerReadOnlyDTO(savedCustomer);
-
+        return responseDTO;
     }
 
     @Transactional

@@ -25,16 +25,14 @@ public class CustomerRestController {
     private final CustomerService customerService;
 
     @PostMapping("customers/save")
-    public ResponseEntity<CustomerReadOnlyDTO> saveCustomer(
+    public ResponseEntity<ResponseDTO> saveCustomer(
             @Valid @RequestBody CustomerInsertDTO customerInsertDTO,
-            BindingResult bindingResult) throws AppObjectAlreadyExists, ValidationException {
-
-        if(bindingResult.hasErrors()){
-            throw new ValidationException(bindingResult);
+            BindingResult bindingResult) {
+        ResponseDTO responseDTO = customerService.saveCustomer(customerInsertDTO, bindingResult);
+        if (responseDTO.getErrorResponse() != null) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_ACCEPTABLE);
         }
-
-        CustomerReadOnlyDTO customerReadOnlyDTO = customerService.saveCustomer(customerInsertDTO);
-        return new ResponseEntity<>(customerReadOnlyDTO, HttpStatus.OK);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @GetMapping("/customers")
