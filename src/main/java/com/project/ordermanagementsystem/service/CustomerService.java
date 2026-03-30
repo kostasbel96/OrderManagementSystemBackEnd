@@ -43,7 +43,6 @@ public class CustomerService {
             }
 
             if (customerRepository.existsByPhoneNumber1AndActiveTrue(dto.getPhoneNumber1())) {
-                LOGGER.error("Customer with phone number: {} already exists.", dto.getPhoneNumber1());
                 throw new AppObjectAlreadyExists(
                         "CustomerPhoneNumber1",
                         "Customer with phone number " + dto.getPhoneNumber1() + " already exists."
