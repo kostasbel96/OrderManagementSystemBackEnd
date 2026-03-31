@@ -18,4 +18,7 @@ public class OrderItemInsertDTO {
     @NotNull(message = "Quantity is required.")
     private Integer quantity;
 
+    @NotNull(message = "Price is required.")
+    private String price;
+
 }

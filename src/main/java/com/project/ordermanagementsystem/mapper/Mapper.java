@@ -21,6 +21,7 @@ public class Mapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setQuantity(dto.getQuantity());
+        product.setPrice(dto.getPrice());
 
         return product;
     }
@@ -31,6 +32,7 @@ public class Mapper {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setQuantity(product.getQuantity());
+        dto.setPrice(product.getPrice());
 
         return dto;
     }
@@ -92,6 +94,7 @@ public class Mapper {
         dto.setId(orderItem.getId());
         dto.setProduct(mapToProductReadOnlyDTO(orderItem.getProduct()));
         dto.setQuantity(orderItem.getQuantity());
+        dto.setPrice(orderItem.getPrice());
 
         return dto;
     }

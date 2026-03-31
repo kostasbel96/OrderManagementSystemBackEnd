@@ -116,6 +116,7 @@ public class ProductService {
             existingProduct.setName(dto.getName());
             existingProduct.setDescription(dto.getDescription());
             existingProduct.setQuantity(dto.getQuantity());
+            existingProduct.setPrice(dto.getPrice());
 
             Product updatedProduct = productRepository.save(existingProduct);
 

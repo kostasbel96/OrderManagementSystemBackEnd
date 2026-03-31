@@ -62,6 +62,7 @@ public class OrderService {
 
             OrderItem item = new OrderItem();
             item.setProduct(product);
+            item.setPrice(itemDTO.getPrice());
             item.setQuantity(itemDTO.getQuantity());
 
             order.addOrderItem(item);
@@ -134,35 +135,35 @@ public class OrderService {
             existingOrder = orderRepository.findById(dto.getId())
                     .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", String.format("Order with id: %s not found", dto.getId())));
 
-            boolean itemsChanged = itemsHaveChanged(existingOrder, dto);
-
             existingOrder.setId(dto.getId());
             existingOrder.setCustomer(mapper.mapToCustomerEntity(dto.getCustomer()));
             existingOrder.setAddress(dto.getAddress());
 
-            if (itemsChanged) {
-                for (OrderItem oldItem : existingOrder.getItems()) {
-                    Product product = oldItem.getProduct();
-                    product.increaseStock(oldItem.getQuantity());
+
+            for (OrderItem oldItem : existingOrder.getItems()) {
+                Product product = oldItem.getProduct();
+                product.increaseStock(oldItem.getQuantity());
+            }
+
+            existingOrder.getItems().clear();
+
+            for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
+
+                Product product = productRepository.findById(itemDTO.getProduct().getId())
+                        .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
+
+                if (product.getQuantity() >= itemDTO.getQuantity()){
+                    product.reduceStock(itemDTO.getQuantity());
+                } else {
+                    throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
                 }
-                existingOrder.getItems().clear();
-                for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
-                    Product product = productRepository.findById(itemDTO.getProduct().getId())
-                            .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
 
-                    if (product.getQuantity() >= itemDTO.getQuantity()){
-                        product.reduceStock(itemDTO.getQuantity());
-                    } else {
-                        LOGGER.error("Product with id: {} has not enough quantity to place the order.", itemDTO.getProduct().getId());
-                        throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
-                    }
+                OrderItem item = new OrderItem();
+                item.setProduct(product);
+                item.setQuantity(itemDTO.getQuantity());
+                item.setPrice(itemDTO.getPrice());
 
-                    OrderItem item = new OrderItem();
-                    item.setProduct(product);
-                    item.setQuantity(itemDTO.getQuantity());
-
-                    existingOrder.addOrderItem(item);
-                }
+                existingOrder.addOrderItem(item);
             }
 
             Order updatedOrder = orderRepository.save(existingOrder);
@@ -204,21 +205,6 @@ public class OrderService {
         }
 
         return responseDTO;
-    }
-
-    private boolean itemsHaveChanged(Order existingOrder, OrderUpdateDTO dto) {
-        return !existingOrder.getItems().stream()
-                .allMatch(existingItem ->
-                        dto.getItems().stream()
-                                .anyMatch(dtoItem ->
-                                        dtoItem.getProduct().getId().equals(existingItem.getProduct().getId()) &&
-                                                dtoItem.getQuantity().equals(existingItem.getQuantity())
-                                )
-                ) || dto.getItems().stream()
-                .anyMatch(dtoItem ->
-                        existingOrder.getItems().stream()
-                                .noneMatch(existingItem -> existingItem.getProduct().getId().equals(dtoItem.getProduct().getId()))
-                );
     }
 
 }

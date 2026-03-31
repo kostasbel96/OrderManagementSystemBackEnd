@@ -16,4 +16,6 @@ public class OrderItemReadOnlyDTO {
     private ProductReadOnlyDTO product;
 
     private Integer quantity;
+
+    private String price;
 }

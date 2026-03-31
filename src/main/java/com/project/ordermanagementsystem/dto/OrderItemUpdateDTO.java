@@ -23,4 +23,8 @@ public class OrderItemUpdateDTO {
     @Min(value = 1, message = "Product quantity must be at least 1.")
     private Integer quantity;
 
+    @NotNull(message = "Price is required.")
+    @Min(value = 1, message = "Product price must be at least 1.")
+    private String price;
+
 }

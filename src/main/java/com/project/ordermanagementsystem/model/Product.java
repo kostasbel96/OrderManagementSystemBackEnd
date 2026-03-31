@@ -26,6 +26,8 @@ public class Product extends AbstractEntity{
 
     private Integer quantity;
 
+    private String price;
+
     private boolean active = true;
 
     @OneToMany(mappedBy = "product")

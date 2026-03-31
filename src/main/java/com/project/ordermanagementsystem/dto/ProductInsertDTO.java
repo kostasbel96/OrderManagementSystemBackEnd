@@ -19,4 +19,8 @@ public class ProductInsertDTO {
 
     @NotNull(message = "Product quantity field is required")
     private Integer quantity;
+
+    @NotNull(message = "Product price field is required")
+    private String price;
+
 }

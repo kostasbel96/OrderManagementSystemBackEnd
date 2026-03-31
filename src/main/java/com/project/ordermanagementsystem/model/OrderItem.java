@@ -24,4 +24,6 @@ public class OrderItem extends AbstractEntity{
     private Product product;
 
     private Integer quantity;
+
+    private String price;
 }

@@ -15,5 +15,6 @@ public class ProductReadOnlyDTO {
     private String name;
     private String description;
     private Integer quantity;
+    private String price;
 
 }
