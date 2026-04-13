@@ -22,4 +22,6 @@ public class CustomerReadOnlyDTO {
     private String phoneNumber2;
 
     private String email;
+
+    private Double balance;
 }

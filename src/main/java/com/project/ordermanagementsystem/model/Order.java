@@ -32,6 +32,20 @@ public class Order extends AbstractEntity{
 
     private boolean active = true;
 
+    @Transient
+    public Double getTotalAmount() {
+        return items.stream()
+                .mapToDouble(item ->
+                    {
+                        if (item != null && item.getPrice() != null){
+                            return item.getPrice().doubleValue() * item.getQuantity();
+                        }
+                        return 0.0;
+                    }
+                )
+                .sum();
+    }
+
     public void addOrderItem(OrderItem item){
         items.add(item);
         item.setOrder(this);

@@ -3,6 +3,8 @@ package com.project.ordermanagementsystem.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,5 +27,5 @@ public class OrderItem extends AbstractEntity{
 
     private Integer quantity;
 
-    private String price;
+    private BigDecimal price;
 }

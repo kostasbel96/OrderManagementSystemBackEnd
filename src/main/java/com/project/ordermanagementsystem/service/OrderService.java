@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -46,7 +47,6 @@ public class OrderService {
         Order order = new Order();
         order.setAddress(dto.getAddress());
         order.setCustomer(customer);
-
         order.setDate(LocalDateTime.now());
 
         for (OrderItemInsertDTO itemDTO : dto.getItems()) {
@@ -62,12 +62,13 @@ public class OrderService {
 
             OrderItem item = new OrderItem();
             item.setProduct(product);
-            item.setPrice(itemDTO.getPrice());
+            item.setPrice(new BigDecimal(itemDTO.getPrice()));
             item.setQuantity(itemDTO.getQuantity());
 
             order.addOrderItem(item);
         }
 
+        customer.addToBalance(order.getTotalAmount());
         Order savedOrder = orderRepository.save(order);
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 
@@ -122,23 +123,23 @@ public class OrderService {
     }
 
     @Transactional
-    public ResponseDTO updateOrder(OrderUpdateDTO dto,
-                                   BindingResult bindingResult) {
-        Order existingOrder;
+    public ResponseDTO updateOrder(OrderUpdateDTO dto, BindingResult bindingResult) {
+
         ResponseDTO responseDTO = new ResponseDTO();
 
         try {
-            if (bindingResult.hasErrors()){
+
+            if (bindingResult.hasErrors()) {
                 throw new ValidationException(bindingResult);
             }
 
-            existingOrder = orderRepository.findById(dto.getId())
-                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", String.format("Order with id: %s not found", dto.getId())));
+            Order existingOrder = orderRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound(
+                            "OrderNotFound",
+                            "Order with id: " + dto.getId() + " not found"
+                    ));
 
-            existingOrder.setId(dto.getId());
-            existingOrder.setCustomer(mapper.mapToCustomerEntity(dto.getCustomer()));
-            existingOrder.setAddress(dto.getAddress());
-
+            BigDecimal oldTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
 
             for (OrderItem oldItem : existingOrder.getItems()) {
                 Product product = oldItem.getProduct();
@@ -150,34 +151,55 @@ public class OrderService {
             for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
 
                 Product product = productRepository.findById(itemDTO.getProduct().getId())
-                        .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
+                        .orElseThrow(() -> new AppObjectNotFound(
+                                "ProductNotFound",
+                                "Product not found"
+                        ));
 
-                if (product.getQuantity() >= itemDTO.getQuantity()){
-                    product.reduceStock(itemDTO.getQuantity());
-                } else {
-                    throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
+                if (product.getQuantity() < itemDTO.getQuantity()) {
+                    throw new AppObjectInvalidQuantity(
+                            "InvalidQuantity",
+                            "Product stock is not enough"
+                    );
                 }
+
+                product.reduceStock(itemDTO.getQuantity());
 
                 OrderItem item = new OrderItem();
                 item.setProduct(product);
                 item.setQuantity(itemDTO.getQuantity());
-                item.setPrice(itemDTO.getPrice());
+                item.setPrice(new BigDecimal(itemDTO.getPrice()));
 
                 existingOrder.addOrderItem(item);
             }
 
+            BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
+
+            BigDecimal diff = newTotal.subtract(oldTotal);
+
+            Customer customer = existingOrder.getCustomer();
+            customer.addToBalance(diff.doubleValue());
+
+            customerRepository.save(customer);
+
             Order updatedOrder = orderRepository.save(existingOrder);
-            responseDTO.setOrderReadOnlyDTO(mapper.mapToOrderReadOnlyDTO(updatedOrder));
-            LOGGER.info("Order with id: {} updated successfully.", updatedOrder.getId());
-        } catch(AppObjectNotFound | ValidationException | AppObjectInvalidQuantity e) {
+
+            responseDTO.setOrderReadOnlyDTO(
+                    mapper.mapToOrderReadOnlyDTO(updatedOrder)
+            );
+
+            LOGGER.info("Order with id {} updated successfully", updatedOrder.getId());
+
+        } catch (AppObjectNotFound | ValidationException | AppObjectInvalidQuantity e) {
+
             LOGGER.error(e.getMessage());
-            ErrorResponse errorResponse =
-                    new ErrorResponse(e.getMessage());
-            responseDTO.setErrorResponse(errorResponse);
+
+            responseDTO.setErrorResponse(
+                    new ErrorResponse(e.getMessage())
+            );
         }
 
         return responseDTO;
-
     }
 
     @Transactional

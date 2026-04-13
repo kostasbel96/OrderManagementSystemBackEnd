@@ -22,4 +22,6 @@ public class OrderReadOnlyDTO {
     private String address;
 
     private String date;
+
+    private Double total;
 }
