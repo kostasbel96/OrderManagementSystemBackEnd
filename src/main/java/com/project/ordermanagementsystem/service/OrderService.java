@@ -46,6 +46,7 @@ public class OrderService {
 
         Order order = new Order();
         order.setAddress(dto.getAddress());
+        order.setDeposit(dto.getDeposit());
         order.setCustomer(customer);
         order.setDate(LocalDateTime.now());
 
@@ -68,7 +69,7 @@ public class OrderService {
             order.addOrderItem(item);
         }
 
-        customer.addToBalance(order.getTotalAmount());
+        customer.addToBalance(order.getTotalAmount() - order.getDeposit().doubleValue());
         Order savedOrder = orderRepository.save(order);
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 

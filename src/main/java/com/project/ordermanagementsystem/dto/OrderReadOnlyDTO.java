@@ -24,4 +24,6 @@ public class OrderReadOnlyDTO {
     private String date;
 
     private Double total;
+
+    private Double deposit;
 }

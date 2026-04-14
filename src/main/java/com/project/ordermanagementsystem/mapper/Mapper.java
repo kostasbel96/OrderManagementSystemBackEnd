@@ -48,18 +48,6 @@ public class Mapper {
         return customer;
     }
 
-    public Customer mapToCustomerEntity(CustomerUpdateDTO dto){
-        Customer customer = new Customer();
-        customer.setId(dto.getId());
-        customer.setName(dto.getName());
-        customer.setLastName(dto.getLastName());
-        customer.setEmail(dto.getEmail());
-        customer.setPhoneNumber1(dto.getPhoneNumber1());
-        customer.setPhoneNumber2(dto.getPhoneNumber2());
-
-        return customer;
-    }
-
     public CustomerReadOnlyDTO mapToCustomerReadOnlyDTO(Customer customer){
         CustomerReadOnlyDTO dto = new CustomerReadOnlyDTO();
         dto.setId(customer.getId());
@@ -82,6 +70,7 @@ public class Mapper {
         dto.setDate(order.getDate().format(formatter));
         dto.setAddress(order.getAddress());
         dto.setTotal(order.getTotalAmount());
+        dto.setDeposit(order.getDeposit());
 
         return dto;
     }
