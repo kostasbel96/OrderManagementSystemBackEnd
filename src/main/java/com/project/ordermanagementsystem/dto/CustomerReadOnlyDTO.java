@@ -23,5 +23,5 @@ public class CustomerReadOnlyDTO {
 
     private String email;
 
-    private Double balance;
+    private String balance;
 }

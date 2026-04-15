@@ -56,7 +56,7 @@ public class Mapper {
         dto.setEmail(customer.getEmail());
         dto.setPhoneNumber1(customer.getPhoneNumber1());
         dto.setPhoneNumber2(customer.getPhoneNumber2());
-        dto.setBalance(customer.getBalance());
+        dto.setBalance(customer.getBalance() != null ? customer.getBalance().toString() : "0.0");
 
         return dto;
     }
@@ -69,8 +69,8 @@ public class Mapper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         dto.setDate(order.getDate().format(formatter));
         dto.setAddress(order.getAddress());
-        dto.setTotal(order.getTotalAmount());
-        dto.setDeposit(order.getDeposit());
+        dto.setTotal(order.getTotalAmount().toString());
+        dto.setDeposit(order.getDeposit() != null ? order.getDeposit().toString() : "0.0");
 
         return dto;
     }

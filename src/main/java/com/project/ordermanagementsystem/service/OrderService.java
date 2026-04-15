@@ -28,6 +28,7 @@ import org.springframework.validation.BindingResult;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,9 +45,10 @@ public class OrderService {
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new AppObjectNotFound("CustomerNotFound","Customer not found"));
 
+        String deposit = dto.getDeposit() != null && !dto.getDeposit().isEmpty() ? dto.getDeposit() : "0.0";
         Order order = new Order();
         order.setAddress(dto.getAddress());
-        order.setDeposit(dto.getDeposit());
+        order.setDeposit(new BigDecimal(deposit));
         order.setCustomer(customer);
         order.setDate(LocalDateTime.now());
 
@@ -69,7 +71,7 @@ public class OrderService {
             order.addOrderItem(item);
         }
 
-        customer.addToBalance(order.getTotalAmount() - order.getDeposit().doubleValue());
+        customer.addToBalance(BigDecimal.valueOf(order.getTotalAmount()).subtract(order.getDeposit()).toString());
         Order savedOrder = orderRepository.save(order);
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 
@@ -141,6 +143,9 @@ public class OrderService {
                     ));
 
             BigDecimal oldTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
+            BigDecimal oldDeposit = existingOrder.getDeposit() != null
+                    ? existingOrder.getDeposit()
+                    : BigDecimal.ZERO;
 
             for (OrderItem oldItem : existingOrder.getItems()) {
                 Product product = oldItem.getProduct();
@@ -173,13 +178,23 @@ public class OrderService {
 
                 existingOrder.addOrderItem(item);
             }
+            String depositStr = Optional.ofNullable(dto.getDeposit())
+                    .filter(s -> !s.isEmpty())
+                    .orElse("0.0");
+
+            BigDecimal newDeposit = new BigDecimal(depositStr);
+
+            existingOrder.setAddress(dto.getAddress());
+            existingOrder.setDeposit(newDeposit);
 
             BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
 
-            BigDecimal diff = newTotal.subtract(oldTotal);
+            BigDecimal diff = newTotal
+                    .subtract(oldTotal)
+                    .subtract(newDeposit.subtract(oldDeposit));
 
             Customer customer = existingOrder.getCustomer();
-            customer.addToBalance(diff.doubleValue());
+            customer.addToBalance(diff.toString());
 
             customerRepository.save(customer);
 

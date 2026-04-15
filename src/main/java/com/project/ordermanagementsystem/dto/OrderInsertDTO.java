@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @NoArgsConstructor
@@ -28,5 +27,5 @@ public class OrderInsertDTO {
     private List<OrderItemInsertDTO> items;
 
     @Nullable
-    private Double deposit;
+    private String deposit;
 }

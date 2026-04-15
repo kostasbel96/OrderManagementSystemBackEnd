@@ -23,7 +23,7 @@ public class OrderReadOnlyDTO {
 
     private String date;
 
-    private Double total;
+    private String total;
 
-    private Double deposit;
+    private String deposit;
 }

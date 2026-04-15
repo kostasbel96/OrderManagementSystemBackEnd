@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,7 @@ public class OrderUpdateDTO {
 
     @NotNull(message = "Customer is required")
     private CustomerUpdateDTO customer;
+
+    @Nullable
+    private String deposit;
 }

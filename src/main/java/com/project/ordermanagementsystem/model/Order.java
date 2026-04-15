@@ -33,7 +33,7 @@ public class Order extends AbstractEntity{
 
     private boolean active = true;
 
-    private Double deposit;
+    private BigDecimal deposit;
 
     @Transient
     public Double getTotalAmount() {

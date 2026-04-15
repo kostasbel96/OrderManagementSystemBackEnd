@@ -3,6 +3,7 @@ package com.project.ordermanagementsystem.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,16 +31,16 @@ public class Customer extends AbstractEntity{
 
     private boolean active = true;
 
-    private Double balance;
+    private BigDecimal balance;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
-    public void addToBalance(Double amount) {
+    public void addToBalance(String amount) {
         if (balance == null) {
-            balance = 0.0;
+            balance = new BigDecimal("0.0");
         }
-        balance += amount;
+        balance = balance.add(new BigDecimal(amount));
         setBalance(balance);
     }
 
