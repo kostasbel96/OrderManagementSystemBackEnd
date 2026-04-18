@@ -26,13 +26,13 @@ public class CustomerUpdateDTO {
 
     @NotBlank(message = "Customer phone number is required.")
     @Pattern(
-            regexp = "^[0-9]{10,}$",
+            regexp = "^\\+?[0-9]{10,}$",
             message = "Phone number must be at least 10 digits and contain only numbers."
     )
     private String phoneNumber1;
 
     @Pattern(
-            regexp = "^$|^[0-9]{10,}$",
+            regexp = "^\\+?[0-9]{10,}$",
             message = "Phone number must be at least 10 digits and contain only numbers."
     )
     private String phoneNumber2;
