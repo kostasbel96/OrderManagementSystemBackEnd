@@ -69,7 +69,8 @@ public class Mapper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         dto.setDate(order.getDate().format(formatter));
         dto.setAddress(order.getAddress());
-        dto.setTotal(order.getTotalAmount().toString());
+        order.calculateTotalAmount();
+        dto.setTotal(order.getTotal().toString());
         dto.setDeposit(order.getDeposit() != null ? order.getDeposit().toString() : "0.0");
 
         return dto;

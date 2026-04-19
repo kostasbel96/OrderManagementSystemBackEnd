@@ -35,18 +35,16 @@ public class Order extends AbstractEntity{
 
     private BigDecimal deposit;
 
-    @Transient
-    public Double getTotalAmount() {
-        return items.stream()
-                .mapToDouble(item ->
-                    {
-                        if (item != null && item.getPrice() != null){
-                            return item.getPrice().doubleValue() * item.getQuantity();
-                        }
-                        return 0.0;
-                    }
-                )
-                .sum();
+    private Double total;
+
+    private Double remaining;
+
+    public void calculateTotalAmount() {
+        this.total = items == null ? 0.0 :
+                items.stream()
+                        .filter(i -> i != null && i.getPrice() != null)
+                        .mapToDouble(i -> i.getPrice().doubleValue() * i.getQuantity())
+                        .sum();
     }
 
     public void addOrderItem(OrderItem item){

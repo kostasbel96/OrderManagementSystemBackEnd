@@ -70,8 +70,8 @@ public class OrderService {
 
             order.addOrderItem(item);
         }
-
-        customer.addToBalance(BigDecimal.valueOf(order.getTotalAmount()).subtract(order.getDeposit()).toString());
+        order.calculateTotalAmount();
+        customer.addToBalance(BigDecimal.valueOf(order.getTotal()).subtract(order.getDeposit()).toString());
         Order savedOrder = orderRepository.save(order);
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 
@@ -142,7 +142,8 @@ public class OrderService {
                             "Order with id: " + dto.getId() + " not found"
                     ));
 
-            BigDecimal oldTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
+            existingOrder.calculateTotalAmount();
+            BigDecimal oldTotal = BigDecimal.valueOf(existingOrder.getTotal());
             BigDecimal oldDeposit = existingOrder.getDeposit() != null
                     ? existingOrder.getDeposit()
                     : BigDecimal.ZERO;
@@ -187,7 +188,8 @@ public class OrderService {
             existingOrder.setAddress(dto.getAddress());
             existingOrder.setDeposit(newDeposit);
 
-            BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotalAmount());
+            existingOrder.calculateTotalAmount();
+            BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotal());
 
             BigDecimal diff = newTotal
                     .subtract(oldTotal)
