@@ -37,8 +37,6 @@ public class Order extends AbstractEntity{
 
     private Double total;
 
-    private Double remaining;
-
     public void calculateTotalAmount() {
         this.total = items == null ? 0.0 :
                 items.stream()
