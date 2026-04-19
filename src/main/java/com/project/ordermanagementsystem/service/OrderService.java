@@ -241,6 +241,18 @@ public class OrderService {
                             String.format("Order with id: %s not found.", dto.getId())));
             if (!orderToDelete.getItems().isEmpty()) {
                 orderToDelete.setActive(false);
+
+                BigDecimal total = BigDecimal.valueOf(orderToDelete.getTotal());
+                BigDecimal deposit = orderToDelete.getDeposit();
+
+                Customer customer = orderToDelete.getCustomer();
+
+                BigDecimal amountToRemove = total.subtract(deposit);
+
+                customer.setBalance(
+                        customer.getBalance().subtract(amountToRemove)
+                );
+
                 orderRepository.save(orderToDelete);
             } else {
                 orderRepository.delete(orderToDelete);
