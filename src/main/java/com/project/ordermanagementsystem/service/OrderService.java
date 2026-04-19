@@ -1,6 +1,7 @@
 package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
+import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
@@ -87,22 +88,32 @@ public class OrderService {
     }
 
     @Transactional
-    public Page<OrderReadOnlyDTO> searchOrdersByCustomerName(String name, String lastName, String sortBy, String sortDirection, int page, int pageSize){
+    public Page<OrderReadOnlyDTO> searchOrders(SearchRequest request){
 
         Pageable pageable = PageRequest.of(
-                page,
-                pageSize,
-                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
+                request.getPage(),
+                request.getPageSize(),
+                Sort.by(
+                        Sort.Direction.fromString(request.getSort().getSort()),
+                        request.getSort().getField()
+                )
         );
 
-        Specification<Order> spec = Specification
-                .where(OrderSpecification.hasCustomerName(name))
-                .or(OrderSpecification.hasCustomerLastName(lastName))
-                .and(OrderSpecification.isActive());
+        Specification<Order> spec = Specification.where(OrderSpecification.isActive());
 
-        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        if (request.getGlobalSearch() != null && !request.getGlobalSearch().isBlank()) {
+            spec = spec.and(OrderSpecification.globalSearch(request.getGlobalSearch()));
+        }
 
-        return orders.map(mapper::mapToOrderReadOnlyDTO);
+        if (request.getFilters() != null) {
+            for (FilterRequest filter : request.getFilters()) {
+                spec = spec.and(OrderSpecification.fromFilter(filter));
+            }
+        }
+
+        Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+
+        return orderPage.map(mapper::mapToOrderReadOnlyDTO);
 
     }
 

@@ -4,9 +4,11 @@ import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
+import com.project.ordermanagementsystem.core.specifications.ProductSpecification;
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.model.Customer;
+import com.project.ordermanagementsystem.model.Product;
 import com.project.ordermanagementsystem.repository.CustomerRepository;
 import com.project.ordermanagementsystem.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -73,28 +75,32 @@ public class CustomerService {
         return customerRepository.findAll(spec, pageable).map(mapper::mapToCustomerReadOnlyDTO);
     }
 
-    public Page<CustomerReadOnlyDTO> searchCustomers(String name, String lastName, String sortBy, String sortDirection, int page, int pageSize){
+    public Page<CustomerReadOnlyDTO> searchCustomers(SearchRequest request) {
 
         Pageable pageable = PageRequest.of(
-                page,
-                pageSize,
-                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
+                request.getPage(),
+                request.getPageSize(),
+                Sort.by(
+                        Sort.Direction.fromString(request.getSort().getSort()),
+                        request.getSort().getField()
+                )
         );
 
-        Specification<Customer> spec = Specification.where(
-                CustomerSpecification.trStringFieldLike("name", name)
-        ).or(
-                CustomerSpecification.trStringFieldLike("lastName", lastName)
-        ).and(
-                CustomerSpecification.isActive()
-        );
+        Specification<Customer> spec = Specification.where(CustomerSpecification.isActive());
 
+        if (request.getGlobalSearch() != null && !request.getGlobalSearch().isBlank()) {
+            spec = spec.and(CustomerSpecification.globalSearch(request.getGlobalSearch()));
+        }
 
+        if (request.getFilters() != null) {
+            for (FilterRequest filter : request.getFilters()) {
+                spec = spec.and(CustomerSpecification.fromFilter(filter));
+            }
+        }
 
-        Page<Customer> customersPage = customerRepository.findAll(spec, pageable);
+        Page<Customer> customerPage = customerRepository.findAll(spec, pageable);
 
-        return customersPage.map(mapper::mapToCustomerReadOnlyDTO);
-
+        return customerPage.map(mapper::mapToCustomerReadOnlyDTO);
     }
 
     public ResponseDTO getCustomerById(Long id) {

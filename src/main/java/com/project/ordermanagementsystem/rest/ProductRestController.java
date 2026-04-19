@@ -2,8 +2,6 @@ package com.project.ordermanagementsystem.rest;
 
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.ProductService;
-import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
-import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -52,13 +48,9 @@ public class ProductRestController {
         return new ResponseEntity<>(productsPage, HttpStatus.OK);
     }
 
-    @GetMapping("/products/search")
-    public ResponseEntity<Page<ProductReadOnlyDTO>> searchProducts(@RequestParam(required = false) String name,
-                                                                   @RequestParam(required = false, defaultValue = "name") String sortBy,
-                                                                   @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
-                                                                   @RequestParam(required = false, defaultValue = "0") int page,
-                                                                   @RequestParam(required = false, defaultValue = "5") int pageSize){
-        Page<ProductReadOnlyDTO> responseDto = productService.searchProducts(name, sortBy, sortDirection, page, pageSize);
+    @PostMapping("/products/search")
+    public ResponseEntity<Page<ProductReadOnlyDTO>> searchProducts(@RequestBody SearchRequest request){
+        Page<ProductReadOnlyDTO> responseDto = productService.searchProducts(request);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

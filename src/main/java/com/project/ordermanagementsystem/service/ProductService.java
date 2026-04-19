@@ -52,21 +52,28 @@ public class ProductService {
         return productRepository.findAll(spec, pageable).map(mapper::mapToProductReadOnlyDTO);
     }
 
-    public Page<ProductReadOnlyDTO> searchProducts(String name,
-                                                   String sortBy,
-                                                   String sortDirection,
-                                                   int page,
-                                                   int pageSize) {
+    public Page<ProductReadOnlyDTO> searchProducts(SearchRequest request) {
 
         Pageable pageable = PageRequest.of(
-                page,
-                pageSize,
-                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
+                request.getPage(),
+                request.getPageSize(),
+                Sort.by(
+                        Sort.Direction.fromString(request.getSort().getSort()),
+                        request.getSort().getField()
+                )
         );
 
-        Specification<Product> spec = Specification.where(
-                ProductSpecification.trStringFieldLike("name", name)
-        ).and(ProductSpecification.isActive());
+        Specification<Product> spec = Specification.where(ProductSpecification.isActive());
+
+        if (request.getGlobalSearch() != null && !request.getGlobalSearch().isBlank()) {
+            spec = spec.and(ProductSpecification.globalSearch(request.getGlobalSearch()));
+        }
+
+        if (request.getFilters() != null) {
+            for (FilterRequest filter : request.getFilters()) {
+                spec = spec.and(ProductSpecification.fromFilter(filter));
+            }
+        }
 
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 

@@ -1,10 +1,13 @@
 package com.project.ordermanagementsystem.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +24,7 @@ public class CustomerUpdateDTO {
     @NotEmpty(message = "Customer lastname is required.")
     private String lastName;
 
+    @Nullable
     @Email
     private String email;
 
@@ -32,9 +36,8 @@ public class CustomerUpdateDTO {
     private String phoneNumber1;
 
     @Pattern(
-            regexp = "^\\+?[0-9]{10,}$",
-            message = "Phone number must be at least 10 digits and contain only numbers."
+            regexp = "^(|\\+?[0-9]{10,})$",
+            message = "Phone number must be empty or at least 10 digits"
     )
     private String phoneNumber2;
-
 }

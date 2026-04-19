@@ -1,11 +1,6 @@
 package com.project.ordermanagementsystem.rest;
 
-import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
-import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
-import com.project.ordermanagementsystem.dto.CustomerReadOnlyDTO;
-import com.project.ordermanagementsystem.dto.CustomerUpdateDTO;
-import com.project.ordermanagementsystem.dto.ResponseDTO;
+import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -45,14 +38,9 @@ public class CustomerRestController {
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 
-    @GetMapping("/customers/search")
-    public ResponseEntity<Page<CustomerReadOnlyDTO>> searchCustomers(@RequestParam(required = false) String name,
-                                                                     @RequestParam(required = false) String lastName,
-                                                                     @RequestParam(required = false, defaultValue = "name") String sortBy,
-                                                                     @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
-                                                                     @RequestParam(required = false, defaultValue = "0") int page,
-                                                                     @RequestParam(required = false, defaultValue = "5") int pageSize){
-        Page<CustomerReadOnlyDTO> responseDto= customerService.searchCustomers(name, lastName, sortBy, sortDirection, page, pageSize);
+    @PostMapping("/customers/search")
+    public ResponseEntity<Page<CustomerReadOnlyDTO>> searchCustomers(@RequestBody SearchRequest request){
+        Page<CustomerReadOnlyDTO> responseDto= customerService.searchCustomers(request);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

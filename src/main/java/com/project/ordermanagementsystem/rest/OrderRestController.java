@@ -46,16 +46,10 @@ public class OrderRestController {
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
     }
 
-    @GetMapping("/orders/search")
-    public ResponseEntity<Page<OrderReadOnlyDTO>> searchOrdersByCustomerName(@RequestParam(required = false) String name,
-                                                                  @RequestParam(required = false) String lastName,
-                                                                  @RequestParam(required = false, defaultValue = "date") String sortBy,
-                                                                  @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
-                                                                  @RequestParam(required = false, defaultValue = "0") int page,
-                                                                  @RequestParam(required = false, defaultValue = "5") int pageSize){
+    @PostMapping("/orders/search")
+    public ResponseEntity<Page<OrderReadOnlyDTO>> searchOrders(@RequestBody SearchRequest request){
 
-        Page<OrderReadOnlyDTO> responseDto =
-                orderService.searchOrdersByCustomerName(name, lastName, sortBy, sortDirection, page, pageSize);
+        Page<OrderReadOnlyDTO> responseDto = orderService.searchOrders(request);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
