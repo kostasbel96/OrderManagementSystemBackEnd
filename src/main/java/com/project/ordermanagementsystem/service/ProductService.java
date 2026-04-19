@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -116,7 +118,7 @@ public class ProductService {
             existingProduct.setName(dto.getName());
             existingProduct.setDescription(dto.getDescription());
             existingProduct.setQuantity(dto.getQuantity());
-            existingProduct.setPrice(dto.getPrice());
+            existingProduct.setPrice(new BigDecimal(dto.getPrice()));
 
             Product updatedProduct = productRepository.save(existingProduct);
 

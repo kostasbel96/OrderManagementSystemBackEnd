@@ -4,6 +4,7 @@ package com.project.ordermanagementsystem.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class Product extends AbstractEntity{
 
     private Integer quantity;
 
-    private String price;
+    private BigDecimal price;
 
     private boolean active = true;
 

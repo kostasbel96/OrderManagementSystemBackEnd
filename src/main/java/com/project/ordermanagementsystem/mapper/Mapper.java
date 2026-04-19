@@ -8,6 +8,7 @@ import com.project.ordermanagementsystem.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Mapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setQuantity(dto.getQuantity());
-        product.setPrice(dto.getPrice());
+        product.setPrice(new BigDecimal(dto.getPrice()));
 
         return product;
     }
@@ -32,7 +33,7 @@ public class Mapper {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setQuantity(product.getQuantity());
-        dto.setPrice(product.getPrice());
+        dto.setPrice(product.getPrice().toString());
 
         return dto;
     }
