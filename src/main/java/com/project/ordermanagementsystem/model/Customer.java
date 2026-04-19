@@ -36,11 +36,11 @@ public class Customer extends AbstractEntity{
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
-    public void addToBalance(String amount) {
+    public void addToBalance(BigDecimal amount) {
         if (balance == null) {
             balance = new BigDecimal("0.0");
         }
-        balance = balance.add(new BigDecimal(amount));
+        balance = balance.add(amount);
         setBalance(balance);
     }
 

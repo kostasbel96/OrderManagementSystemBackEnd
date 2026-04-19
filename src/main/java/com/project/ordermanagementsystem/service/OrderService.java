@@ -72,7 +72,7 @@ public class OrderService {
             order.addOrderItem(item);
         }
         order.calculateTotalAmount();
-        customer.addToBalance(BigDecimal.valueOf(order.getTotal()).subtract(order.getDeposit()).toString());
+        customer.addToBalance(BigDecimal.valueOf(order.getTotal()).subtract(order.getDeposit()));
         Order savedOrder = orderRepository.save(order);
         LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
 
@@ -202,12 +202,13 @@ public class OrderService {
             existingOrder.calculateTotalAmount();
             BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotal());
 
-            BigDecimal diff = newTotal
-                    .subtract(oldTotal)
-                    .subtract(newDeposit.subtract(oldDeposit));
+            BigDecimal oldImpact = oldTotal.subtract(oldDeposit);
+            BigDecimal newImpact = newTotal.subtract(newDeposit);
+
+            BigDecimal diff = newImpact.subtract(oldImpact);
 
             Customer customer = existingOrder.getCustomer();
-            customer.addToBalance(diff.toString());
+            customer.addToBalance(diff);
 
             customerRepository.save(customer);
 
@@ -239,6 +240,9 @@ public class OrderService {
             orderToDelete = orderRepository.findById(dto.getId())
                     .orElseThrow(() -> new AppObjectNotFound("OrderNotFound",
                             String.format("Order with id: %s not found.", dto.getId())));
+            if (!orderToDelete.isActive()) {
+                throw new IllegalStateException("Order already deleted");
+            }
             if (!orderToDelete.getItems().isEmpty()) {
                 orderToDelete.setActive(false);
 
@@ -253,6 +257,7 @@ public class OrderService {
                         customer.getBalance().subtract(amountToRemove)
                 );
 
+                customerRepository.save(customer);
                 orderRepository.save(orderToDelete);
             } else {
                 orderRepository.delete(orderToDelete);
@@ -260,7 +265,7 @@ public class OrderService {
             OrderReadOnlyDTO returnedOrder = mapper.mapToOrderReadOnlyDTO(orderToDelete);
             responseDTO.setOrderReadOnlyDTO(returnedOrder);
             LOGGER.info("Order with id: {} deleted successfully.", returnedOrder.getId());
-        } catch (AppObjectNotFound e) {
+        } catch (AppObjectNotFound | IllegalStateException e) {
             LOGGER.error(e.getMessage());
             ErrorResponse errorResponse =
                     new ErrorResponse(e.getMessage());
