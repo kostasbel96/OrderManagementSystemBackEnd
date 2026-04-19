@@ -23,7 +23,16 @@ public class CustomerSpecification {
 
             return cb.or(
                     cb.like(cb.lower(root.get("name")), like),
-                    cb.like(cb.lower(root.get("lastName")), like)
+                    cb.like(cb.lower(root.get("lastName")), like),
+                    cb.like(
+                            cb.lower(
+                                    cb.concat(
+                                            cb.concat(root.get("name"), " "),
+                                            root.get("lastName")
+                                    )
+                            ),
+                            like
+                    )
             );
         };
     }
