@@ -66,7 +66,7 @@ public class OrderSpecification {
 
             String field = filter.getField();
             String operator = filter.getOperator();
-            String value = filter.getValue();
+            String value = filter.getValue().toString();
 
             if (operator == null) return cb.conjunction();
             if (value == null) return cb.conjunction();

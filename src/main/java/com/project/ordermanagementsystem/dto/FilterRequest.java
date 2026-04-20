@@ -12,5 +12,5 @@ import lombok.Setter;
 public class FilterRequest {
     private String field;
     private String operator;
-    private String value;
+    private Object value;
 }

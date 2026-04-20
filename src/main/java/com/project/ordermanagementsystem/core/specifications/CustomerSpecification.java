@@ -52,7 +52,7 @@ public class CustomerSpecification {
 
             String field = filter.getField();
             String operator = filter.getOperator();
-            String value = filter.getValue();
+            String value = filter.getValue().toString();
 
             Expression<?> expression = root.get(field);
 
