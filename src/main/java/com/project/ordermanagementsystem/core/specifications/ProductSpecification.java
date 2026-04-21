@@ -16,12 +16,25 @@ public class ProductSpecification {
 
     private ProductSpecification() {}
 
+    private static String normalizeGreek(String input) {
+        return input
+                .toLowerCase()
+                .replace("ά", "α")
+                .replace("έ", "ε")
+                .replace("ή", "η")
+                .replace("ί", "ι")
+                .replace("ό", "ο")
+                .replace("ύ", "υ")
+                .replace("ώ", "ω")
+                .replace("ς", "σ");
+    }
+
     // ---------------- GLOBAL SEARCH ----------------
     public static Specification<Product> globalSearch(String value) {
         return (root, query, cb) -> {
             if (value == null || value.isBlank()) return cb.conjunction();
 
-            String like = "%" + value.toLowerCase() + "%";
+            String like = "%" + normalizeGreek(value.toLowerCase()) + "%";
 
             return cb.or(
                     cb.like(cb.lower(root.get("name")), like),
