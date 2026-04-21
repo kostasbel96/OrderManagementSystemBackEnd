@@ -1,33 +1,26 @@
-# OrderManagementSystemBackEnd
+OrderManagementSystemBackEnd
+Quick Setup for application-dev.properties (Spring Boot)
 
-# Quick Setup for `application-dev.properties` (Spring Boot)
+Create application-dev.properties in src/main/resources:
 
-Create `application-dev.properties` in `src/main/resources`:
-
-```properties
-
-spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:order_management_system}?serverTimezone=UTC
-spring.datasource.username=${MYSQL_USER:orderuser}
-spring.datasource.password=${MYSQL_PASSWORD:1234}
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:order_management_system}
+spring.datasource.username=${DB_USER:postgres}
+spring.datasource.password=${DB_PASSWORD:1234}
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.open-in-view=false
-```
 
-Defaults will be used if environment variables are missing. Make sure MySQL is running and the database/user exist:
+Defaults will be used if environment variables are missing. Make sure PostgreSQL is running and the database/user exist:
 
-```sql
 CREATE DATABASE order_management_system;
-CREATE USER 'orderuser'@'localhost' IDENTIFIED BY '1996';
-GRANT ALL PRIVILEGES ON order_management_system.* TO 'orderuser'@'localhost';
-FLUSH PRIVILEGES;
-```
 
-Restart the app; `dev` profile should load correctly. Disable SQL init scripts if not used:
+CREATE USER orderuser WITH PASSWORD '1996';
 
-```properties
+GRANT ALL PRIVILEGES ON DATABASE order_management_system TO orderuser;
+
+Restart the app; dev profile should load correctly. Disable SQL init scripts if not used:
+
 spring.sql.init.mode=never
-```
