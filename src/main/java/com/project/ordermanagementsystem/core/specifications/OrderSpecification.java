@@ -26,7 +26,7 @@ public class OrderSpecification {
                 return cb.conjunction();
             }
 
-            String like = "%" + value.toLowerCase() + "%";
+            String like = "%" + normalizeGreek(value.toLowerCase()) + "%";
 
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
@@ -384,6 +384,19 @@ public class OrderSpecification {
                 throw new IllegalArgumentException("Invalid date: " + value);
             }
         }
+    }
+
+    private static String normalizeGreek(String input) {
+        return input
+                .toLowerCase()
+                .replace("ά", "α")
+                .replace("έ", "ε")
+                .replace("ή", "η")
+                .replace("ί", "ι")
+                .replace("ό", "ο")
+                .replace("ύ", "υ")
+                .replace("ώ", "ω")
+                .replace("ς", "σ");
     }
 
 }
