@@ -31,10 +31,13 @@ public class OrderSpecification {
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
             query.distinct(true);
+            if (value.matches("\\d+")) {
+                return cb.or(
+                        cb.equal(customer.get("id"), Long.parseLong(value))
+                );
+            }
 
             return cb.or(
-                    // Customer fields
-                    cb.like(customer.get("id").as(String.class), like),
 
                     // Customer separate fields
                     cb.like(cb.lower(customer.get("name")), like),
