@@ -26,7 +26,7 @@ public class OrderSpecification {
                 return cb.conjunction();
             }
 
-            String normalized = normalizeGreek(value.toLowerCase());
+            String normalized = normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
@@ -43,29 +43,64 @@ public class OrderSpecification {
                 );
             }
 
-            Expression<String> customerName = cb.lower(customer.get("name"));
-            Expression<String> customerLastName = cb.lower(customer.get("lastName"));
-
-            Expression<String> fullName = cb.lower(
-                    cb.concat(
-                            cb.concat(customer.get("name"), " "),
-                            customer.get("lastName")
-                    )
+            // ---------------- CUSTOMER FIELDS ----------------
+            Expression<String> customerName = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(customer.get("name")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
             );
+
+            Expression<String> customerLastName = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(customer.get("lastName")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
+
+            Expression<String> fullName = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(
+                            cb.concat(
+                                    cb.concat(
+                                            cb.coalesce(customer.get("name"), ""),
+                                            " "
+                                    ),
+                                    cb.coalesce(customer.get("lastName"), "")
+                            )
+                    ),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
+
+            // ---------------- ORDER FIELDS ----------------
+            Expression<String> address = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(root.get("address")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
+
+            Expression<String> phone1 = root.get("phoneNumber1").as(String.class);
+            Expression<String> phone2 = root.get("phoneNumber2").as(String.class);
 
             return cb.or(
 
-                    // CUSTOMER FIELDS
+                    // CUSTOMER
                     cb.like(customerName, like),
                     cb.like(customerLastName, like),
                     cb.like(fullName, like),
 
-                    // PHONE NUMBERS
-                    cb.like(customer.get("phoneNumber1"), like),
-                    cb.like(customer.get("phoneNumber2"), like),
+                    // PHONE
+                    cb.like(phone1, like),
+                    cb.like(phone2, like),
 
-                    // ORDER FIELDS
-                    cb.like(cb.lower(root.get("address")), like)
+                    // ORDER
+                    cb.like(address, like)
             );
         };
     }

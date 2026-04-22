@@ -30,20 +30,42 @@ public class CustomerSpecification {
 
             String like = "%" + normalizeGreek(value.toLowerCase().trim()) + "%";
 
-            Expression<String> name = cb.lower(root.get("name"));
-            Expression<String> lastName = cb.lower(root.get("lastName"));
+            Expression<String> name = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(root.get("name")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
+            Expression<String> lastName = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(root.get("lastName")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
 
             Expression<String> fullName = cb.lower(
                     cb.concat(
-                            cb.concat(root.get("name"), " "),
-                            root.get("lastName")
+                            cb.concat(
+                                    cb.coalesce(root.get("name"), ""),
+                                    " "
+                            ),
+                            cb.coalesce(root.get("lastName"), "")
                     )
             );
+
+            Expression<String> normalizedFullName =
+                    cb.function("replace", String.class,
+                            fullName,
+                            cb.literal("ς"),
+                            cb.literal("σ")
+                    );
 
             return cb.or(
                     cb.like(name, like),
                     cb.like(lastName, like),
-                    cb.like(fullName, like)
+                    cb.like(normalizedFullName, like)
             );
         };
     }

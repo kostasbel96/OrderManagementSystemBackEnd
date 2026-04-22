@@ -35,8 +35,23 @@ public class ProductSpecification {
 
             query.distinct(true);
 
-            Expression<String> name = cb.lower(root.get("name"));
-            Expression<String> description = cb.lower(root.get("description"));
+            // ---------------- NAME ----------------
+            Expression<String> name = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(root.get("name")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
+
+            // ---------------- DESCRIPTION ----------------
+            Expression<String> description = cb.function(
+                    "replace",
+                    String.class,
+                    cb.lower(root.get("description")),
+                    cb.literal("ς"),
+                    cb.literal("σ")
+            );
 
             return cb.or(
                     cb.like(name, like),
@@ -44,7 +59,6 @@ public class ProductSpecification {
             );
         };
     }
-
     // ---------------- ACTIVE ----------------
     public static Specification<Product> isActive() {
         return (root, query, cb) -> cb.isTrue(root.get("active"));
