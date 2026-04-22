@@ -26,35 +26,45 @@ public class OrderSpecification {
                 return cb.conjunction();
             }
 
-            String like = "%" + normalizeGreek(value.toLowerCase()) + "%";
+            String normalized = normalizeGreek(value.toLowerCase());
+            String like = "%" + normalized + "%";
 
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
             query.distinct(true);
+
+            // numeric search (order id / customer id)
             if (value.matches("\\d+")) {
+                Long id = Long.parseLong(value);
+
                 return cb.or(
-                        cb.equal(customer.get("id"), Long.parseLong(value))
+                        cb.equal(root.get("id"), id),
+                        cb.equal(customer.get("id"), id)
                 );
             }
 
+            Expression<String> customerName = cb.lower(customer.get("name"));
+            Expression<String> customerLastName = cb.lower(customer.get("lastName"));
+
+            Expression<String> fullName = cb.lower(
+                    cb.concat(
+                            cb.concat(customer.get("name"), " "),
+                            customer.get("lastName")
+                    )
+            );
+
             return cb.or(
 
-                    // Customer separate fields
-                    cb.like(cb.lower(customer.get("name")), like),
-                    cb.like(cb.lower(customer.get("lastName")), like),
+                    // CUSTOMER FIELDS
+                    cb.like(customerName, like),
+                    cb.like(customerLastName, like),
+                    cb.like(fullName, like),
 
-                    cb.like(
-                            cb.lower(
-                                    cb.concat(
-                                            cb.concat(customer.get("name"), " "),
-                                            customer.get("lastName")
-                                    )
-                            ),
-                            like
-                    ),
-
+                    // PHONE NUMBERS
                     cb.like(customer.get("phoneNumber1"), like),
                     cb.like(customer.get("phoneNumber2"), like),
+
+                    // ORDER FIELDS
                     cb.like(cb.lower(root.get("address")), like)
             );
         };

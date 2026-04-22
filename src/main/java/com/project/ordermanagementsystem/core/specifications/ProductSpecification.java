@@ -25,13 +25,22 @@ public class ProductSpecification {
     // ---------------- GLOBAL SEARCH ----------------
     public static Specification<Product> globalSearch(String value) {
         return (root, query, cb) -> {
-            if (value == null || value.isBlank()) return cb.conjunction();
 
-            String like = "%" + normalizeGreek(value.toLowerCase()) + "%";
+            if (value == null || value.isBlank()) {
+                return cb.conjunction();
+            }
+
+            String normalized = normalizeGreek(value.toLowerCase().trim());
+            String like = "%" + normalized + "%";
+
+            query.distinct(true);
+
+            Expression<String> name = cb.lower(root.get("name"));
+            Expression<String> description = cb.lower(root.get("description"));
 
             return cb.or(
-                    cb.like(cb.lower(root.get("name")), like),
-                    cb.like(cb.lower(root.get("description")), like)
+                    cb.like(name, like),
+                    cb.like(description, like)
             );
         };
     }

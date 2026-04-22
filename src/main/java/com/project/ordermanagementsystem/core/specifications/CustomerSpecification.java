@@ -23,22 +23,27 @@ public class CustomerSpecification {
     // ---------------- GLOBAL SEARCH ----------------
     public static Specification<Customer> globalSearch(String value) {
         return (root, query, cb) -> {
-            if (value == null || value.isBlank()) return cb.conjunction();
 
-            String like = "%" + normalizeGreek(value.toLowerCase()) + "%";
+            if (value == null || value.isBlank()) {
+                return cb.conjunction();
+            }
+
+            String like = "%" + normalizeGreek(value.toLowerCase().trim()) + "%";
+
+            Expression<String> name = cb.lower(root.get("name"));
+            Expression<String> lastName = cb.lower(root.get("lastName"));
+
+            Expression<String> fullName = cb.lower(
+                    cb.concat(
+                            cb.concat(root.get("name"), " "),
+                            root.get("lastName")
+                    )
+            );
 
             return cb.or(
-                    cb.like(cb.lower(root.get("name")), like),
-                    cb.like(cb.lower(root.get("lastName")), like),
-                    cb.like(
-                            cb.lower(
-                                    cb.concat(
-                                            cb.concat(root.get("name"), " "),
-                                            root.get("lastName")
-                                    )
-                            ),
-                            like
-                    )
+                    cb.like(name, like),
+                    cb.like(lastName, like),
+                    cb.like(fullName, like)
             );
         };
     }
