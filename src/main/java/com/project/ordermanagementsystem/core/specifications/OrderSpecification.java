@@ -112,16 +112,15 @@ public class OrderSpecification {
 
             String field = filter.getField();
             String operator = filter.getOperator();
-            String value = filter.getValue().toString();
+            Object value = filter.getValue();
 
             if (operator == null) return cb.conjunction();
-            if (value == null) return cb.conjunction();
 
             if ("customer".equals(field)) {
 
                 Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
-                return customerPredicate(cb, customer, operator, value);
+                return customerPredicate(cb, customer, operator, value.toString());
             }
 
             if ("products".equals(field)) {
@@ -129,13 +128,13 @@ public class OrderSpecification {
                 Join<Order, OrderItem> items = root.join("items", JoinType.LEFT);
                 Join<OrderItem, Product> product = items.join("product", JoinType.LEFT);
 
-                String like = "%" + value.toLowerCase() + "%";
+                String like = "%" + value.toString().toLowerCase() + "%";
 
                 query.distinct(true);
 
                 return switch (operator) {
 
-                    case "containsProduct", "contains", "equals" -> cb.like(
+                    case "containsProduct" -> cb.like(
                             cb.lower(product.get("name")),
                             like
                     );
@@ -158,11 +157,11 @@ public class OrderSpecification {
 
                 return switch (operator) {
 
-                    case "is", "equals" ->
-                            cb.equal(paymentExpr, value.toUpperCase());
+                    case "is" ->
+                            cb.equal(paymentExpr, value.toString().toUpperCase());
 
                     case "not" ->
-                            cb.notEqual(paymentExpr, value.toUpperCase());
+                            cb.notEqual(paymentExpr, value.toString().toUpperCase());
 
                     default -> cb.conjunction();
                 };
@@ -175,32 +174,32 @@ public class OrderSpecification {
                 // ---------------- STRING OPS ----------------
                 case "contains" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase() + "%"
+                        "%" + value.toString().toLowerCase() + "%"
                 );
 
                 case "doesNotContain" -> cb.notLike(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase() + "%"
+                        "%" + value.toString().toLowerCase() + "%"
                 );
 
                 case "startsWith" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        value.toLowerCase() + "%"
+                        value.toString().toLowerCase() + "%"
                 );
 
                 case "endsWith" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase()
+                        "%" + value.toString().toLowerCase()
                 );
 
-                case "equals", "=", "equal" -> cb.equal(
+                case "equals" -> cb.equal(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 case "doesNotEqual" -> cb.notEqual(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 // ---------------- NULL / EMPTY ----------------
@@ -216,8 +215,10 @@ public class OrderSpecification {
 
                 // ---------------- LIST ----------------
                 case "isAnyOf" -> {
-                    List<String> values = Arrays.stream(value.split(","))
-                            .map(String::trim)
+                    List<?> list = (List<?>) value;
+
+                    List<String> values = list.stream()
+                            .map(Object::toString)
                             .toList();
 
                     CriteriaBuilder.In<Object> in = cb.in(expression);
@@ -229,61 +230,66 @@ public class OrderSpecification {
                 }
 
                 // ---------------- NUMERIC / COMPARISON ----------------
-                case ">", "greaterThan" -> cb.greaterThan(
+                case "=" -> cb.equal(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        castValue(root.get(field), value.toString())
                 );
 
-                case ">=", "greaterThanOrEqual" -> cb.greaterThanOrEqualTo(
+                case ">" -> cb.greaterThan(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
-                case "<", "lessThan" -> cb.lessThan(
+                case ">=" -> cb.greaterThanOrEqualTo(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
-                case "<=", "lessThanOrEqual" -> cb.lessThanOrEqualTo(
+                case "<" -> cb.lessThan(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
+                );
+
+                case "<=" -> cb.lessThanOrEqualTo(
+                        root.get(field),
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
                 // ---------------- NOT EQUAL (extra safety) ----------------
-                case "!=", "notEqual" -> cb.notEqual(
+                case "!=" -> cb.notEqual(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 //------------------ DATE ---------------------
                 case "is" -> cb.equal(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
                 case "not" -> cb.notEqual(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
                 case "after" -> cb.greaterThan(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
                 case "onOrAfter" -> cb.greaterThanOrEqualTo(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
                 case "before" -> cb.lessThan(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
                 case "onOrBefore" -> cb.lessThanOrEqualTo(
                         root.get(field),
-                        parseDate(value)
+                        parseDate(value.toString())
                 );
 
 
@@ -378,7 +384,7 @@ public class OrderSpecification {
                     cb.like(cb.lower(customer.get("lastName")), "%" + value.toLowerCase())
             );
 
-            case "equals", "=", "equal" -> cb.or(
+            case "equals" -> cb.or(
                     cb.equal(cb.lower(customer.get("name")), value.toLowerCase()),
                     cb.like(
                             cb.lower(

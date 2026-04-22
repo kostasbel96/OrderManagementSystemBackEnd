@@ -85,7 +85,7 @@ public class CustomerSpecification {
 
             String field = filter.getField();
             String operator = filter.getOperator();
-            String value = filter.getValue().toString();
+            Object value = filter.getValue();
 
             Expression<?> expression = root.get(field);
 
@@ -97,32 +97,32 @@ public class CustomerSpecification {
                 // ---------------- STRING OPS ----------------
                 case "contains" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase() + "%"
+                        "%" + value.toString().toLowerCase() + "%"
                 );
 
                 case "doesNotContain" -> cb.notLike(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase() + "%"
+                        "%" + value.toString().toLowerCase() + "%"
                 );
 
                 case "startsWith" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        value.toLowerCase() + "%"
+                        value.toString().toLowerCase() + "%"
                 );
 
                 case "endsWith" -> cb.like(
                         cb.lower(expression.as(String.class)),
-                        "%" + value.toLowerCase()
+                        "%" + value.toString().toLowerCase()
                 );
 
-                case "equals", "=", "equal" -> cb.equal(
+                case "equals" -> cb.equal(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 case "doesNotEqual" -> cb.notEqual(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 // ---------------- NULL / EMPTY ----------------
@@ -138,10 +138,11 @@ public class CustomerSpecification {
 
                 // ---------------- LIST ----------------
                 case "isAnyOf" -> {
-                    List<String> values = Arrays.stream(value.split(","))
-                            .map(String::trim)
-                            .toList();
+                    List<?> list = (List<?>) value;
 
+                    List<String> values = list.stream()
+                            .map(Object::toString)
+                            .toList();
                     CriteriaBuilder.In<Object> in = cb.in(expression);
                     for (String v : values) {
                         in.value(castValue(expression, v));
@@ -151,30 +152,34 @@ public class CustomerSpecification {
                 }
 
                 // ---------------- NUMERIC / COMPARISON ----------------
-                case ">", "greaterThan" -> cb.greaterThan(
+                case "=" -> cb.equal(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        castValue(root.get(field), value.toString())
+                );
+                case ">" -> cb.greaterThan(
+                        root.get(field),
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
-                case ">=", "greaterThanOrEqual" -> cb.greaterThanOrEqualTo(
+                case ">=" -> cb.greaterThanOrEqualTo(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
-                case "<", "lessThan" -> cb.lessThan(
+                case "<" -> cb.lessThan(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
-                case "<=", "lessThanOrEqual" -> cb.lessThanOrEqualTo(
+                case "<=" -> cb.lessThanOrEqualTo(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value)
+                        (Comparable) castValue(root.get(field), value.toString())
                 );
 
                 // ---------------- NOT EQUAL (extra safety) ----------------
-                case "!=", "notEqual" -> cb.notEqual(
+                case "!=" -> cb.notEqual(
                         expression,
-                        castValue(expression, value)
+                        castValue(expression, value.toString())
                 );
 
                 // ---------------- DEFAULT ----------------

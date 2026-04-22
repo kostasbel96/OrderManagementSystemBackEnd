@@ -79,7 +79,6 @@ public class ProductSpecification {
             Expression<?> expression = root.get(field);
 
             if (operator == null) return cb.conjunction();
-            if (value == null) return cb.conjunction();
 
             return switch (operator) {
 
