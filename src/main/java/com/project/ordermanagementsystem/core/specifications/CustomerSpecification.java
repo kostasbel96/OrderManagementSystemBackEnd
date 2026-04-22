@@ -79,7 +79,7 @@ public class CustomerSpecification {
     public static Specification<Customer> fromFilter(FilterRequest filter) {
         return (root, query, cb) -> {
 
-            if (filter == null || filter.getField() == null) {
+            if (filter == null || filter.getField() == null || filter.getValue() == null) {
                 return cb.conjunction();
             }
 

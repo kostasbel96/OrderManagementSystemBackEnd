@@ -26,22 +26,20 @@ public class OrderSpecification {
                 return cb.conjunction();
             }
 
-            String normalized = normalizeGreek(value.toLowerCase().trim());
-            String like = "%" + normalized + "%";
+
 
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
             query.distinct(true);
 
-            // numeric search (order id / customer id)
+            // numeric search (customer id)
             if (value.matches("\\d+")) {
                 Long id = Long.parseLong(value);
-
-                return cb.or(
-                        cb.equal(root.get("id"), id),
-                        cb.equal(customer.get("id"), id)
-                );
+                return cb.equal(customer.get("id"), id);
             }
+
+            String normalized = normalizeGreek(value.toLowerCase().trim());
+            String like = "%" + normalized + "%";
 
             // ---------------- CUSTOMER FIELDS ----------------
             Expression<String> customerName = cb.function(
@@ -85,8 +83,8 @@ public class OrderSpecification {
                     cb.literal("σ")
             );
 
-            Expression<String> phone1 = root.get("phoneNumber1").as(String.class);
-            Expression<String> phone2 = root.get("phoneNumber2").as(String.class);
+            Expression<String> phone1 = customer.get("phoneNumber1").as(String.class);
+            Expression<String> phone2 = customer.get("phoneNumber2").as(String.class);
 
             return cb.or(
 
@@ -108,7 +106,7 @@ public class OrderSpecification {
     public static Specification<Order> fromFilter(FilterRequest filter) {
         return (root, query, cb) -> {
 
-            if (filter == null || filter.getField() == null) {
+            if (filter == null || filter.getField() == null || filter.getValue() == null) {
                 return cb.conjunction();
             }
 
