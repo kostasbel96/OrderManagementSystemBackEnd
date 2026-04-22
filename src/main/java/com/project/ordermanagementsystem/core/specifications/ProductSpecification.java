@@ -19,13 +19,6 @@ public class ProductSpecification {
     private static String normalizeGreek(String input) {
         return input
                 .toLowerCase()
-                .replace("ά", "α")
-                .replace("έ", "ε")
-                .replace("ή", "η")
-                .replace("ί", "ι")
-                .replace("ό", "ο")
-                .replace("ύ", "υ")
-                .replace("ώ", "ω")
                 .replace("ς", "σ");
     }
 
