@@ -31,7 +31,7 @@ public class Customer extends AbstractEntity{
 
     private boolean active = true;
 
-    private BigDecimal balance;
+    private BigDecimal balance = BigDecimal.valueOf(0.0);
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
