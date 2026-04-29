@@ -29,20 +29,22 @@ public class Order extends AbstractEntity{
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
+
     private LocalDateTime date;
 
     private boolean active = true;
 
-    private BigDecimal deposit;
-
-    private Double total;
+    private BigDecimal total;
 
     public void calculateTotalAmount() {
-        this.total = items == null ? 0.0 :
+        this.total = items == null ? BigDecimal.ZERO :
                 items.stream()
                         .filter(i -> i != null && i.getPrice() != null)
-                        .mapToDouble(i -> i.getPrice().doubleValue() * i.getQuantity())
-                        .sum();
+                        .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public void addOrderItem(OrderItem item){

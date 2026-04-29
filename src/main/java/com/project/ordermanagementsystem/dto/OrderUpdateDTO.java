@@ -29,6 +29,4 @@ public class OrderUpdateDTO {
     @NotNull(message = "Customer is required")
     private CustomerUpdateDTO customer;
 
-    @Nullable
-    private String deposit;
 }

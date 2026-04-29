@@ -42,27 +42,36 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public OrderReadOnlyDTO saveOrder(OrderInsertDTO dto) throws AppObjectNotFound, AppObjectInvalidQuantity {
-        Customer customer = customerRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new AppObjectNotFound("CustomerNotFound","Customer not found"));
+    public OrderReadOnlyDTO saveOrder(OrderInsertDTO dto)
+            throws AppObjectNotFound, AppObjectInvalidQuantity {
 
-        String deposit = dto.getDeposit() != null && !dto.getDeposit().isEmpty() ? dto.getDeposit() : "0.0";
+        Customer customer = customerRepository.findById(dto.getCustomerId())
+                .orElseThrow(() -> new AppObjectNotFound(
+                        "CustomerNotFound",
+                        "Customer not found"
+                ));
+
         Order order = new Order();
         order.setAddress(dto.getAddress());
-        order.setDeposit(new BigDecimal(deposit));
         order.setCustomer(customer);
         order.setDate(LocalDateTime.now());
 
         for (OrderItemInsertDTO itemDTO : dto.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() -> new AppObjectNotFound("ProductNotFound","Product not found"));
 
-            if (product.getQuantity() >= itemDTO.getQuantity()){
-                product.reduceStock(itemDTO.getQuantity());
-            } else {
-                LOGGER.error("Product with id: {} has not enough quantity to place the order.", itemDTO.getProductId());
-                throw new AppObjectInvalidQuantity("InvalidQuantity", "Product stock is not enough.");
+            Product product = productRepository.findById(itemDTO.getProductId())
+                    .orElseThrow(() -> new AppObjectNotFound(
+                            "ProductNotFound",
+                            "Product not found"
+                    ));
+
+            if (product.getQuantity() < itemDTO.getQuantity()) {
+                throw new AppObjectInvalidQuantity(
+                        "InvalidQuantity",
+                        "Product stock is not enough"
+                );
             }
+
+            product.reduceStock(itemDTO.getQuantity());
 
             OrderItem item = new OrderItem();
             item.setProduct(product);
@@ -71,13 +80,19 @@ public class OrderService {
 
             order.addOrderItem(item);
         }
+
         order.calculateTotalAmount();
-        customer.addToBalance(BigDecimal.valueOf(order.getTotal()).subtract(order.getDeposit()));
+
+        BigDecimal impact = order.getTotal();
+
+        customer.addToBalance(impact);
+
+        customerRepository.save(customer);
         Order savedOrder = orderRepository.save(order);
-        LOGGER.info("Order with id: {} saved successfully.", savedOrder.getId());
+
+        LOGGER.info("Order with id {} saved successfully", savedOrder.getId());
 
         return mapper.mapToOrderReadOnlyDTO(savedOrder);
-
     }
 
     @Transactional
@@ -153,12 +168,10 @@ public class OrderService {
                             "Order with id: " + dto.getId() + " not found"
                     ));
 
-            existingOrder.calculateTotalAmount();
-            BigDecimal oldTotal = BigDecimal.valueOf(existingOrder.getTotal());
-            BigDecimal oldDeposit = existingOrder.getDeposit() != null
-                    ? existingOrder.getDeposit()
-                    : BigDecimal.ZERO;
+            // OLD IMPACT
+            BigDecimal oldTotal = existingOrder.getTotal();
 
+            // restore stock
             for (OrderItem oldItem : existingOrder.getItems()) {
                 Product product = oldItem.getProduct();
                 product.increaseStock(oldItem.getQuantity());
@@ -166,6 +179,7 @@ public class OrderService {
 
             existingOrder.getItems().clear();
 
+            // rebuild order
             for (OrderItemUpdateDTO itemDTO : dto.getItems()) {
 
                 Product product = productRepository.findById(itemDTO.getProduct().getId())
@@ -190,28 +204,20 @@ public class OrderService {
 
                 existingOrder.addOrderItem(item);
             }
-            String depositStr = Optional.ofNullable(dto.getDeposit())
-                    .filter(s -> !s.isEmpty())
-                    .orElse("0.0");
-
-            BigDecimal newDeposit = new BigDecimal(depositStr);
 
             existingOrder.setAddress(dto.getAddress());
-            existingOrder.setDeposit(newDeposit);
 
+            // NEW IMPACT
             existingOrder.calculateTotalAmount();
-            BigDecimal newTotal = BigDecimal.valueOf(existingOrder.getTotal());
+            BigDecimal newTotal = existingOrder.getTotal();
 
-            BigDecimal oldImpact = oldTotal.subtract(oldDeposit);
-            BigDecimal newImpact = newTotal.subtract(newDeposit);
-
-            BigDecimal diff = newImpact.subtract(oldImpact);
+            // BALANCE DIFF (IMPORTANT PART)
+            BigDecimal diff = newTotal.subtract(oldTotal);
 
             Customer customer = existingOrder.getCustomer();
             customer.addToBalance(diff);
 
             customerRepository.save(customer);
-
             Order updatedOrder = orderRepository.save(existingOrder);
 
             responseDTO.setOrderReadOnlyDTO(
@@ -234,42 +240,48 @@ public class OrderService {
 
     @Transactional
     public ResponseDTO deleteOrder(OrderUpdateDTO dto) {
-        Order orderToDelete;
+
         ResponseDTO responseDTO = new ResponseDTO();
+
         try {
-            orderToDelete = orderRepository.findById(dto.getId())
-                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound",
-                            String.format("Order with id: %s not found.", dto.getId())));
-            if (!orderToDelete.isActive()) {
-                throw new IllegalStateException("Order already deleted");
+
+            Order order = orderRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound(
+                            "OrderNotFound",
+                            "Order with id: " + dto.getId() + " not found"
+                    ));
+
+            if (!order.isActive()) {
+                throw new IllegalStateException("Order already cancelled");
             }
-            if (!orderToDelete.getItems().isEmpty()) {
-                orderToDelete.setActive(false);
 
-                BigDecimal total = BigDecimal.valueOf(orderToDelete.getTotal());
-                BigDecimal deposit = orderToDelete.getDeposit();
+            // calculate current impact
+            order.calculateTotalAmount();
+            BigDecimal oldImpact = order.getTotal();
 
-                Customer customer = orderToDelete.getCustomer();
+            // SOFT DELETE
+            order.setActive(false);
 
-                BigDecimal amountToRemove = total.subtract(deposit);
+            // BALANCE REVERSAL
+            Customer customer = order.getCustomer();
+            customer.addToBalance(oldImpact.negate());
 
-                customer.setBalance(
-                        customer.getBalance().subtract(amountToRemove)
-                );
+            customerRepository.save(customer);
+            Order saved = orderRepository.save(order);
 
-                customerRepository.save(customer);
-                orderRepository.save(orderToDelete);
-            } else {
-                orderRepository.delete(orderToDelete);
-            }
-            OrderReadOnlyDTO returnedOrder = mapper.mapToOrderReadOnlyDTO(orderToDelete);
-            responseDTO.setOrderReadOnlyDTO(returnedOrder);
-            LOGGER.info("Order with id: {} deleted successfully.", returnedOrder.getId());
+            responseDTO.setOrderReadOnlyDTO(
+                    mapper.mapToOrderReadOnlyDTO(saved)
+            );
+
+            LOGGER.info("Order with id {} cancelled successfully", saved.getId());
+
         } catch (AppObjectNotFound | IllegalStateException e) {
+
             LOGGER.error(e.getMessage());
-            ErrorResponse errorResponse =
-                    new ErrorResponse(e.getMessage());
-            responseDTO.setErrorResponse(errorResponse);
+
+            responseDTO.setErrorResponse(
+                    new ErrorResponse(e.getMessage())
+            );
         }
 
         return responseDTO;

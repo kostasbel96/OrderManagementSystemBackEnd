@@ -26,6 +26,4 @@ public class OrderInsertDTO {
     @NotEmpty(message = "Order items is required.")
     private List<OrderItemInsertDTO> items;
 
-    @Nullable
-    private String deposit;
 }

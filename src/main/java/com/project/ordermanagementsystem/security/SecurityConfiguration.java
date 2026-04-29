@@ -50,7 +50,14 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.1.2:5173", "http://localhost:3000", "https://ordermanagementsystemui.onrender.com"));
+//        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "http://192.168.*.*:5173",
+                "http://localhost:3000",
+                "https://ordermanagementsystemui.onrender.com"
+        ));
+//        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.1.2:5173", "http://localhost:3000", "https://ordermanagementsystemui.onrender.com"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

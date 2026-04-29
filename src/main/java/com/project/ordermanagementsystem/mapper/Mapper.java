@@ -72,7 +72,6 @@ public class Mapper {
         dto.setAddress(order.getAddress());
         order.calculateTotalAmount();
         dto.setTotal(order.getTotal().toString());
-        dto.setDeposit(order.getDeposit() != null ? order.getDeposit().toString() : "0.0");
 
         return dto;
     }
