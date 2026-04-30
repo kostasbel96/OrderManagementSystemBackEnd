@@ -1,10 +1,7 @@
 package com.project.ordermanagementsystem.mapper;
 
 import com.project.ordermanagementsystem.dto.*;
-import com.project.ordermanagementsystem.model.Customer;
-import com.project.ordermanagementsystem.model.Order;
-import com.project.ordermanagementsystem.model.OrderItem;
-import com.project.ordermanagementsystem.model.Product;
+import com.project.ordermanagementsystem.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -60,6 +57,27 @@ public class Mapper {
         dto.setBalance(customer.getBalance() != null ? customer.getBalance().toString() : "0.0");
 
         return dto;
+    }
+
+    public DriverReadOnlyDTO mapToDriverReadOnlyDTO(DriverPerson driver){
+        DriverReadOnlyDTO dto = new DriverReadOnlyDTO();
+        dto.setId(driver.getId());
+        dto.setName(driver.getName());
+        dto.setLastName(driver.getLastName());
+        dto.setPhoneNumber1(driver.getPhoneNumber1());
+        dto.setPhoneNumber2(driver.getPhoneNumber2());
+
+        return dto;
+    }
+
+    public DriverPerson mapToDriverEntity(DriverInsertDTO dto){
+        DriverPerson driver = new DriverPerson();
+        driver.setName(dto.getName());
+        driver.setLastName(dto.getLastName());
+        driver.setPhoneNumber1(dto.getPhoneNumber1());
+        driver.setPhoneNumber2(dto.getPhoneNumber2());
+
+        return driver;
     }
 
     public OrderReadOnlyDTO mapToOrderReadOnlyDTO(Order order){

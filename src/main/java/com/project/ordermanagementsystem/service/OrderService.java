@@ -1,7 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
@@ -28,8 +27,6 @@ import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

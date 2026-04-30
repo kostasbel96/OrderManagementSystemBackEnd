@@ -15,9 +15,12 @@ public class ResponseDTO {
     List<OrderReadOnlyDTO> orderItems;
     @JsonProperty("orderItem")
     OrderReadOnlyDTO orderReadOnlyDTO;
+    @JsonProperty("errorResponse")
     ErrorResponse errorResponse;
     @JsonProperty("customer")
     CustomerReadOnlyDTO customerReadOnlyDTO;
+    @JsonProperty("driver")
+    DriverReadOnlyDTO driverReadOnlyDTO;
     @JsonProperty("productDto")
     ProductReadOnlyDTO productReadOnlyDTO;
 }

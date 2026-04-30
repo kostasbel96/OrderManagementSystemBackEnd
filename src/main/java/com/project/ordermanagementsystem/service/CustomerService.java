@@ -4,13 +4,10 @@ import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
-import com.project.ordermanagementsystem.core.specifications.ProductSpecification;
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.model.Customer;
-import com.project.ordermanagementsystem.model.Product;
 import com.project.ordermanagementsystem.repository.CustomerRepository;
-import com.project.ordermanagementsystem.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -32,7 +27,6 @@ public class CustomerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
     private final Mapper mapper;
     private final CustomerRepository customerRepository;
-    private final ProductRepository productRepository;
 
     @Transactional
     public ResponseDTO saveCustomer(CustomerInsertDTO dto, BindingResult bindingResult) {
