@@ -1,11 +1,13 @@
 package com.project.ordermanagementsystem.model;
 
+import com.project.ordermanagementsystem.core.enums.RouteStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +27,22 @@ public class Route extends AbstractEntity{
 
     private String notes;
 
+    private LocalDateTime date;
+
+    @Enumerated(EnumType.STRING)
+    private RouteStatus status; // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+
     private boolean active = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     private DriverPerson driver;
 
-    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
 
-
+    public void addOrder(Order order){
+        orders.add(order);
+        order.setRoute(this);
+    }
 }

@@ -23,4 +23,6 @@ public class ResponseDTO {
     DriverReadOnlyDTO driverReadOnlyDTO;
     @JsonProperty("productDto")
     ProductReadOnlyDTO productReadOnlyDTO;
+    @JsonProperty("route")
+    RouteReadOnlyDTO routeReadOnlyDTO;
 }

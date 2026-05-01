@@ -1,6 +1,6 @@
 package com.project.ordermanagementsystem.dto;
 
-import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 public class OrderInsertDTO {
 
-    @NotNull(message = "Order address is required.")
+    @NotBlank(message = "Order address is required.")
     private String address;
 
     @NotNull(message = "Customer id for order is required.")

@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.dto;
 
+import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,8 @@ public class OrderReadOnlyDTO {
     private String date;
 
     private String total;
+
+    private OrderStatus status;
 
     private String deposit;
 }

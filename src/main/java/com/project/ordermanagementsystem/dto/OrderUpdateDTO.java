@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.dto;
 
+import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -28,5 +29,7 @@ public class OrderUpdateDTO {
 
     @NotNull(message = "Customer is required")
     private CustomerUpdateDTO customer;
+
+    private OrderStatus status;
 
 }

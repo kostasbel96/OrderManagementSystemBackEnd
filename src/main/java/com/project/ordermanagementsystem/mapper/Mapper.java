@@ -94,6 +94,25 @@ public class Mapper {
         return dto;
     }
 
+    public RouteReadOnlyDTO mapToRouteReadOnlyDTO(Route route){
+        RouteReadOnlyDTO dto = new RouteReadOnlyDTO();
+        dto.setId(route.getId());
+        dto.setDriver(mapToDriverReadOnlyDTO(route.getDriver()));
+        dto.setOrders(
+                route.getOrders() == null
+                        ? List.of()
+                        : route.getOrders().stream()
+                        .map(this::mapToOrderReadOnlyDTO)
+                        .toList()
+        );
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        dto.setDate(route.getDate().format(formatter));
+        dto.setNotes(route.getNotes());
+        dto.setName(route.getName());
+        dto.setStatus(route.getStatus());
+        return dto;
+    }
+
     private List<OrderItemReadOnlyDTO> mapToOrderItemListReadOnlyDTO(List<OrderItem> items){
         if (items == null) return new ArrayList<>();
         return items.stream().map(this::mapToOrderItemReadOnlyDTO).toList();

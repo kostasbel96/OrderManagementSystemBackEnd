@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.model;
 
+import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,6 +33,9 @@ public class Order extends AbstractEntity{
     @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     private LocalDateTime date;
 

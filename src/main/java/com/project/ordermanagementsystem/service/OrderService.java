@@ -1,15 +1,13 @@
 package com.project.ordermanagementsystem.service;
 
+import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.mapper.Mapper;
-import com.project.ordermanagementsystem.model.Customer;
-import com.project.ordermanagementsystem.model.Order;
-import com.project.ordermanagementsystem.model.OrderItem;
-import com.project.ordermanagementsystem.model.Product;
+import com.project.ordermanagementsystem.model.*;
 import com.project.ordermanagementsystem.repository.CustomerRepository;
 import com.project.ordermanagementsystem.repository.OrderRepository;
 import com.project.ordermanagementsystem.repository.ProductRepository;
@@ -52,6 +50,7 @@ public class OrderService {
         order.setAddress(dto.getAddress());
         order.setCustomer(customer);
         order.setDate(LocalDateTime.now());
+        order.setStatus(OrderStatus.PENDING);
 
         for (OrderItemInsertDTO itemDTO : dto.getItems()) {
 
@@ -92,14 +91,14 @@ public class OrderService {
         return mapper.mapToOrderReadOnlyDTO(savedOrder);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<OrderReadOnlyDTO> getPaginatedOrders(int page, int size, String sortBy, String sortDirection){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Specification<Order> spec = Specification.where(OrderSpecification.isActive());
         return orderRepository.findAll(spec, pageable).map(mapper::mapToOrderReadOnlyDTO);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<OrderReadOnlyDTO> searchOrders(SearchRequest request){
 
         Pageable pageable = PageRequest.of(
@@ -203,7 +202,7 @@ public class OrderService {
             }
 
             existingOrder.setAddress(dto.getAddress());
-
+            existingOrder.setStatus(dto.getStatus());
             // NEW IMPACT
             existingOrder.calculateTotalAmount();
             BigDecimal newTotal = existingOrder.getTotal();
@@ -284,4 +283,20 @@ public class OrderService {
         return responseDTO;
     }
 
+
+    @Transactional
+    public void assignToRoute(Order order, Route route) {
+
+        if (order == null || route == null) {
+            throw new IllegalArgumentException("Order and Route must not be null");
+        }
+
+        if (order.getStatus() == OrderStatus.DELIVERED ||
+                order.getStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot assign completed/cancelled order to route");
+        }
+
+        route.addOrder(order);
+        order.setStatus(OrderStatus.ASSIGNED);
+    }
 }
