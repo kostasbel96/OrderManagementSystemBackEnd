@@ -1,6 +1,7 @@
 package com.project.ordermanagementsystem.rest;
 
 
+import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 
@@ -24,7 +25,7 @@ public class RouteRestController {
     @PostMapping("routes/save")
     public ResponseEntity<RouteReadOnlyDTO> saveRoute(
             @Valid @RequestBody RouteInsertDTO routeInsertDTO,
-            BindingResult bindingResult) throws ValidationException, AppObjectNotFound {
+            BindingResult bindingResult) throws ValidationException, AppObjectNotFound, AppObjectAlreadyExists {
 
         if(bindingResult.hasErrors()){
             throw new ValidationException(bindingResult);

@@ -2,6 +2,7 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import com.project.ordermanagementsystem.core.enums.RouteStatus;
+import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.RouteSpecification;
@@ -35,7 +36,6 @@ public class RouteService {
     private final OrderRepository orderRepository;
     private final RouteRepository routeRepository;
     private final DriverRepository driverRepository;
-    private final OrderService orderService;
 
     @Transactional(readOnly = true)
     public Page<RouteReadOnlyDTO> getPaginatedRoutes(
@@ -90,7 +90,7 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteReadOnlyDTO saveRoute(RouteInsertDTO dto) throws AppObjectNotFound {
+    public RouteReadOnlyDTO saveRoute(RouteInsertDTO dto) throws AppObjectNotFound, AppObjectAlreadyExists {
 
         DriverPerson driver = driverRepository.findById(dto.getDriverId())
                 .orElseThrow(() -> new AppObjectNotFound(
@@ -98,8 +98,16 @@ public class RouteService {
                         "Driver not found"
                 ));
         List<Long> orderIds = dto.getOrderIds();
-        if (orderIds == null || orderIds.isEmpty()) {
-            throw new AppObjectNotFound("OrderNotFound", "Order not found");
+        for (Long orderId : orderIds) {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
+
+            if (order.getRoute() != null) {
+                throw new AppObjectAlreadyExists(
+                        "OrderAlreadyExists",
+                        "Order " + orderId + " already assigned to a route"
+                );
+            }
         }
 
         Route route = new Route();
@@ -118,8 +126,9 @@ public class RouteService {
                             "OrderNotFound",
                             "Order not found"
                     ));
-
-            orderService.assignToRoute(order, savedRoute);
+            order.setStatus(OrderStatus.ASSIGNED);
+            savedRoute.addOrder(order);
+            orderRepository.save(order);
         }
 
         LOGGER.info("Route with id {} saved successfully", savedRoute.getId());
@@ -171,7 +180,8 @@ public class RouteService {
                                     "Order not found"
                             ));
 
-                    orderService.assignToRoute(order, existingRoute);
+                    existingRoute.addOrder(order);
+                    orderRepository.save(order);
                 }
             }
 
@@ -228,7 +238,7 @@ public class RouteService {
                     ));
 
             if (!route.isActive()) {
-                throw new IllegalStateException("Route already cancelled");
+                throw new IllegalStateException("Route already deleted");
             }
 
             // optional: handle assigned orders

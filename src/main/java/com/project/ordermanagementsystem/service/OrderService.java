@@ -283,20 +283,4 @@ public class OrderService {
         return responseDTO;
     }
 
-
-    @Transactional
-    public void assignToRoute(Order order, Route route) {
-
-        if (order == null || route == null) {
-            throw new IllegalArgumentException("Order and Route must not be null");
-        }
-
-        if (order.getStatus() == OrderStatus.DELIVERED ||
-                order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Cannot assign completed/cancelled order to route");
-        }
-
-        route.addOrder(order);
-        order.setStatus(OrderStatus.ASSIGNED);
-    }
 }
