@@ -2,7 +2,6 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import com.project.ordermanagementsystem.core.enums.RouteStatus;
-import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.RouteSpecification;
@@ -25,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -97,6 +97,10 @@ public class RouteService {
                         "DriverNotFound",
                         "Driver not found"
                 ));
+        List<Long> orderIds = dto.getOrderIds();
+        if (orderIds == null || orderIds.isEmpty()) {
+            throw new AppObjectNotFound("OrderNotFound", "Order not found");
+        }
 
         Route route = new Route();
         route.setName(dto.getName());
@@ -107,7 +111,7 @@ public class RouteService {
 
         Route savedRoute = routeRepository.save(route);
 
-        for (Long orderId : dto.getOrderIds()) {
+        for (Long orderId : orderIds) {
 
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new AppObjectNotFound(
@@ -189,6 +193,25 @@ public class RouteService {
         }
 
         return responseDTO;
+    }
+
+    @Transactional
+    public ResponseDTO getRouteById(Long id) {
+        Route route;
+        ResponseDTO responseDTO = new ResponseDTO();
+        try{
+            route = routeRepository.findById(id)
+                    .orElseThrow(()-> new AppObjectNotFound("RouteNotFound",String.format("Route with id: %s not found", id)));
+            LOGGER.info("Route with id: {} found successfully.", route.getId());
+            responseDTO.setRouteReadOnlyDTO(mapper.mapToRouteReadOnlyDTO(route));
+        } catch (AppObjectNotFound e){
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse =
+                    new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        }
+        return responseDTO;
+
     }
 
     @Transactional

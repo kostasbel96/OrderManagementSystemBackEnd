@@ -27,7 +27,6 @@ public class RouteUpdateDTO {
     @NotNull(message = "Driver for route is required.")
     private Long driverId;
 
-    @NotNull(message = "Route status is required.")
     private RouteStatus status;
 
     @NotNull(message = "Orders for route is required.")
