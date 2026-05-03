@@ -90,50 +90,66 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteReadOnlyDTO saveRoute(RouteInsertDTO dto) throws AppObjectNotFound, AppObjectAlreadyExists {
+    public ResponseDTO saveRoute(RouteInsertDTO dto, BindingResult bindingResult) {
 
-        DriverPerson driver = driverRepository.findById(dto.getDriverId())
-                .orElseThrow(() -> new AppObjectNotFound(
-                        "DriverNotFound",
-                        "Driver not found"
-                ));
-        List<Long> orderIds = dto.getOrderIds();
-        for (Long orderId : orderIds) {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
+        ResponseDTO responseDTO = new ResponseDTO();
 
-            if (order.getRoute() != null) {
-                throw new AppObjectAlreadyExists(
-                        "OrderAlreadyExists",
-                        "Order " + orderId + " already assigned to a route"
-                );
+        try {
+            if (bindingResult.hasErrors()) {
+                throw new ValidationException(bindingResult);
             }
-        }
 
-        Route route = new Route();
-        route.setName(dto.getName());
-        route.setNotes(dto.getNotes());
-        route.setDate(LocalDateTime.now());
-        route.setDriver(driver);
-        route.setStatus(RouteStatus.PLANNED);
-
-        Route savedRoute = routeRepository.save(route);
-
-        for (Long orderId : orderIds) {
-
-            Order order = orderRepository.findById(orderId)
+            DriverPerson driver = driverRepository.findById(dto.getDriverId())
                     .orElseThrow(() -> new AppObjectNotFound(
-                            "OrderNotFound",
-                            "Order not found"
+                            "DriverNotFound",
+                            "Driver not found"
                     ));
-            order.setStatus(OrderStatus.ASSIGNED);
-            savedRoute.addOrder(order);
-            orderRepository.save(order);
+            List<Long> orderIds = dto.getOrderIds();
+            for (Long orderId : orderIds) {
+                Order order = orderRepository.findById(orderId)
+                        .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
+
+                if (order.getRoute() != null) {
+                    throw new AppObjectAlreadyExists(
+                            "OrderAlreadyExists",
+                            "Order " + orderId + " already assigned to a route"
+                    );
+                }
+            }
+
+            Route route = new Route();
+            route.setName(dto.getName());
+            route.setNotes(dto.getNotes());
+            route.setDate(LocalDateTime.now());
+            route.setDriver(driver);
+            route.setStatus(RouteStatus.PLANNED);
+
+            Route savedRoute = routeRepository.save(route);
+
+            for (Long orderId : orderIds) {
+
+                Order order = orderRepository.findById(orderId)
+                        .orElseThrow(() -> new AppObjectNotFound(
+                                "OrderNotFound",
+                                "Order not found"
+                        ));
+                order.setStatus(OrderStatus.ASSIGNED);
+                savedRoute.addOrder(order);
+                orderRepository.save(order);
+            }
+
+            LOGGER.info("Route with id {} saved successfully", savedRoute.getId());
+
+            RouteReadOnlyDTO routeReadOnlyDTO = mapper.mapToRouteReadOnlyDTO(savedRoute);
+            responseDTO.setRouteReadOnlyDTO(routeReadOnlyDTO);
+        } catch (AppObjectNotFound | AppObjectAlreadyExists | ValidationException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+            LOGGER.error(e.getMessage());
         }
 
-        LOGGER.info("Route with id {} saved successfully", savedRoute.getId());
+        return responseDTO;
 
-        return mapper.mapToRouteReadOnlyDTO(savedRoute);
     }
 
     @Transactional

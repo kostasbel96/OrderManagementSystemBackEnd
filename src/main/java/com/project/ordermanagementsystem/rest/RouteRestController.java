@@ -23,16 +23,17 @@ public class RouteRestController {
     private final RouteService routeService;
 
     @PostMapping("routes/save")
-    public ResponseEntity<RouteReadOnlyDTO> saveRoute(
+    public ResponseEntity<ResponseDTO> saveRoute(
             @Valid @RequestBody RouteInsertDTO routeInsertDTO,
-            BindingResult bindingResult) throws ValidationException, AppObjectNotFound, AppObjectAlreadyExists {
+            BindingResult bindingResult) {
 
-        if(bindingResult.hasErrors()){
-            throw new ValidationException(bindingResult);
+        ResponseDTO responseDto = routeService.saveRoute(routeInsertDTO, bindingResult);
+
+        if (responseDto.getErrorResponse() != null){
+            return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
         }
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
 
-        RouteReadOnlyDTO routeReadOnlyDTO = routeService.saveRoute(routeInsertDTO);
-        return new ResponseEntity<>(routeReadOnlyDTO, HttpStatus.OK);
     }
 
     @GetMapping("/routes/{id}")
