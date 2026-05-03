@@ -25,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +97,7 @@ public class RouteService {
         ResponseDTO responseDTO = new ResponseDTO();
 
         try {
+            List<Long> orderIdsExistInRoute = new ArrayList<>();
             if (bindingResult.hasErrors()) {
                 throw new ValidationException(bindingResult);
             }
@@ -110,11 +113,17 @@ public class RouteService {
                         .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
 
                 if (order.getRoute() != null) {
-                    throw new AppObjectAlreadyExists(
-                            "OrderAlreadyExists",
-                            "Order " + orderId + " already assigned to a route"
-                    );
+                    orderIdsExistInRoute.add(orderId);
                 }
+            }
+
+            if (!orderIdsExistInRoute.isEmpty()){
+                throw new AppObjectAlreadyExists(
+                        "OrderAlreadyExists",
+                        "Order(s) with id(s): " +  orderIdsExistInRoute.stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining(", ")) + " already assigned to a route"
+                );
             }
 
             Route route = new Route();
