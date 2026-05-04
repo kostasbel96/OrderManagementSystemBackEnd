@@ -206,6 +206,13 @@ public class RouteService {
                                     "Order not found"
                             ));
 
+                    if (order.getRoute() != null && !order.getRoute().getId().equals(existingRoute.getId())) {
+                        throw new AppObjectAlreadyExists(
+                                "OrderAlreadyAssigned",
+                                "Order with id: " + orderId + " already belongs to route with id: " + order.getRoute().getId()
+                        );
+                    }
+
                     existingRoute.addOrder(order);
                     orderRepository.save(order);
                 }
@@ -219,7 +226,7 @@ public class RouteService {
 
             LOGGER.info("Route with id {} updated successfully", updatedRoute.getId());
 
-        } catch (AppObjectNotFound | ValidationException e) {
+        } catch (AppObjectNotFound | ValidationException | AppObjectAlreadyExists e) {
 
             LOGGER.error(e.getMessage());
 
