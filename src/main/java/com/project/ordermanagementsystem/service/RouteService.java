@@ -129,7 +129,7 @@ public class RouteService {
             Route route = new Route();
             route.setName(dto.getName());
             route.setNotes(dto.getNotes());
-            route.setDate(LocalDateTime.now());
+            route.setDate(dto.getDate());
             route.setDriver(driver);
             route.setStatus(RouteStatus.PLANNED);
 
@@ -182,6 +182,7 @@ public class RouteService {
             existingRoute.setName(dto.getName());
             existingRoute.setNotes(dto.getNotes());
             existingRoute.setStatus(dto.getStatus());
+            existingRoute.setDate(dto.getDate());
             // driver update
             DriverPerson driver = driverRepository.findById(dto.getDriverId())
                     .orElseThrow(() -> new AppObjectNotFound(

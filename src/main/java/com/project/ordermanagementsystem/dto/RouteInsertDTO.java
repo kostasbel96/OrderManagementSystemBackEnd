@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @NoArgsConstructor
@@ -26,5 +27,8 @@ public class RouteInsertDTO {
     @NotNull(message = "Orders for route is required.")
     @NotEmpty(message = "Orders for route is required.")
     private List<Long> orderIds;
+
+    @NotNull(message = "Execution date is required.")
+    private LocalDate date;
 
 }

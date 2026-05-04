@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -31,5 +32,8 @@ public class RouteUpdateDTO {
 
     @NotNull(message = "Orders for route is required.")
     private List<Long> orderIds;
+
+    @NotNull(message = "Execution date is required.")
+    private LocalDate date;
 
 }
