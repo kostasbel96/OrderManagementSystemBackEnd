@@ -170,6 +170,29 @@ public class OrderSpecification {
                 };
             }
 
+            // ---------------- DATE FILTER ----------------
+            if ("date".equals(field) || "createdAt".equals(field)) {
+
+                LocalDateTime date = parseDate(value.toString());
+
+                return switch (operator) {
+
+                    case "is" -> cb.equal(root.get(field), date);
+
+                    case "not" -> cb.notEqual(root.get(field), date);
+
+                    case "after" -> cb.greaterThan(root.get(field), date);
+
+                    case "onOrAfter" -> cb.greaterThanOrEqualTo(root.get(field), date);
+
+                    case "before" -> cb.lessThan(root.get(field), date);
+
+                    case "onOrBefore" -> cb.lessThanOrEqualTo(root.get(field), date);
+
+                    default -> cb.conjunction();
+                };
+            }
+
             Expression<?> expression = root.get(field);
 
             return switch (operator) {
@@ -263,38 +286,6 @@ public class OrderSpecification {
                         expression,
                         castValue(expression, value.toString())
                 );
-
-                //------------------ DATE ---------------------
-                case "is" -> cb.equal(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
-                case "not" -> cb.notEqual(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
-                case "after" -> cb.greaterThan(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
-                case "onOrAfter" -> cb.greaterThanOrEqualTo(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
-                case "before" -> cb.lessThan(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
-                case "onOrBefore" -> cb.lessThanOrEqualTo(
-                        root.get(field),
-                        parseDate(value.toString())
-                );
-
 
                 // ---------------- DEFAULT ----------------
                 default -> cb.conjunction();

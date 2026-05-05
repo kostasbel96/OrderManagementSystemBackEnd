@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -49,7 +50,7 @@ public class OrderService {
         Order order = new Order();
         order.setAddress(dto.getAddress());
         order.setCustomer(customer);
-        order.setDate(LocalDateTime.now());
+        order.setDate(LocalDate.now());
         order.setStatus(OrderStatus.PENDING);
 
         for (OrderItemInsertDTO itemDTO : dto.getItems()) {

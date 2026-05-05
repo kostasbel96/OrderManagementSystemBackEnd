@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class Order extends AbstractEntity{
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    private LocalDateTime date;
+    private LocalDate date;
 
     private boolean active = true;
 
