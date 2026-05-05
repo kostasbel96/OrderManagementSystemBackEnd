@@ -87,6 +87,7 @@ public class Mapper {
         dto.setItems(mapToOrderItemListReadOnlyDTO(order.getItems()));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         dto.setDate(order.getDate().format(formatter));
+        dto.setStatus(order.getStatus());
         dto.setAddress(order.getAddress());
         order.calculateTotalAmount();
         dto.setTotal(order.getTotal().toString());

@@ -145,22 +145,26 @@ public class OrderSpecification {
                 };
             }
 
-            if ("payment".equals(field)) {
-
-                CriteriaBuilder.Case<String> paymentCase = cb.selectCase();
-
-                Expression<String> paymentExpr = paymentCase
-                        .when(cb.equal(root.get("deposit"), BigDecimal.ZERO), "UNPAID")
-                        .when(cb.lessThan(root.get("deposit"), root.get("total")), "PARTIAL")
-                        .otherwise("PAID");
+            // ---------------- STATUS ----------------
+            if ("status".equals(field)) {
 
                 return switch (operator) {
 
-                    case "is" ->
-                            cb.equal(paymentExpr, value.toString().toUpperCase());
+                    case "is" -> cb.equal(root.get("status"), value);
 
-                    case "not" ->
-                            cb.notEqual(paymentExpr, value.toString().toUpperCase());
+                    case "not" -> cb.notEqual(root.get("status"), value);
+
+                    case "isAnyOf" -> {
+                        List<?> list = (List<?>) value;
+
+                        CriteriaBuilder.In<Object> in = cb.in(root.get("status"));
+
+                        for (Object v : list) {
+                            in.value(v);
+                        }
+
+                        yield in;
+                    }
 
                     default -> cb.conjunction();
                 };

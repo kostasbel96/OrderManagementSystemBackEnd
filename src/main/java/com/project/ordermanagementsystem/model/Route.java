@@ -45,4 +45,9 @@ public class Route extends AbstractEntity{
         orders.add(order);
         order.setRoute(this);
     }
+
+    public void clearOrders() {
+        orders.forEach(order -> order.setRoute(null));
+        orders.clear();
+    }
 }

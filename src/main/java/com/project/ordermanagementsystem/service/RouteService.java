@@ -142,7 +142,7 @@ public class RouteService {
                                 "OrderNotFound",
                                 "Order not found"
                         ));
-                order.setStatus(OrderStatus.ASSIGNED);
+                order.setStatus(OrderStatus.PENDING);
                 savedRoute.addOrder(order);
                 orderRepository.save(order);
             }
@@ -168,6 +168,7 @@ public class RouteService {
 
         try {
 
+            List<Long> orderIdsExistInRoute = new ArrayList<>();
             if (bindingResult.hasErrors()) {
                 throw new ValidationException(bindingResult);
             }
@@ -183,6 +184,13 @@ public class RouteService {
             existingRoute.setNotes(dto.getNotes());
             existingRoute.setStatus(dto.getStatus());
             existingRoute.setDate(dto.getDate());
+
+            // sync orders status based on route status
+            switch (dto.getStatus()) {
+                case PLANNED     -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.PENDING));
+                case IN_PROGRESS -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.SHIPPED));
+                case COMPLETED   -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.DELIVERED));
+            }
             // driver update
             DriverPerson driver = driverRepository.findById(dto.getDriverId())
                     .orElseThrow(() -> new AppObjectNotFound(
@@ -192,27 +200,31 @@ public class RouteService {
 
             existingRoute.setDriver(driver);
 
-            // store old orders (optional safety / reassign logic)
-            existingRoute.getOrders().clear();
-
             // rebuild orders
             if (dto.getOrderIds() != null && !dto.getOrderIds().isEmpty()) {
 
                 for (Long orderId : dto.getOrderIds()) {
-
                     Order order = orderRepository.findById(orderId)
-                            .orElseThrow(() -> new AppObjectNotFound(
-                                    "OrderNotFound",
-                                    "Order not found"
-                            ));
+                            .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
 
                     if (order.getRoute() != null && !order.getRoute().getId().equals(existingRoute.getId())) {
-                        throw new AppObjectAlreadyExists(
-                                "OrderAlreadyAssigned",
-                                "Order with id: " + orderId + " already belongs to route with id: " + order.getRoute().getId()
-                        );
+                        orderIdsExistInRoute.add(orderId);
                     }
+                }
 
+                if (!orderIdsExistInRoute.isEmpty()) {
+                    throw new AppObjectAlreadyExists(
+                            "OrderAlreadyExists",
+                            "Order(s) with id(s): " + orderIdsExistInRoute.stream()
+                                    .map(String::valueOf)
+                                    .collect(Collectors.joining(", ")) + " already assigned to a route"
+                    );
+                }
+                // store old orders (optional safety / reassign logic)
+                existingRoute.clearOrders();
+                for (Long orderId : dto.getOrderIds()) {
+                    Order order = orderRepository.findById(orderId)
+                            .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
                     existingRoute.addOrder(order);
                     orderRepository.save(order);
                 }
@@ -281,7 +293,7 @@ public class RouteService {
                 order.setRoute(null);
 
                 // business rule: revert status if needed
-                if (order.getStatus() == OrderStatus.ASSIGNED) {
+                if (order.getStatus() == OrderStatus.SHIPPED) {
                     order.setStatus(OrderStatus.PENDING);
                 }
             }
