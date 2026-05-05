@@ -185,12 +185,7 @@ public class RouteService {
             existingRoute.setStatus(dto.getStatus());
             existingRoute.setDate(dto.getDate());
 
-            // sync orders status based on route status
-            switch (dto.getStatus()) {
-                case PLANNED     -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.PENDING));
-                case IN_PROGRESS -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.SHIPPED));
-                case COMPLETED   -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.DELIVERED));
-            }
+
             // driver update
             DriverPerson driver = driverRepository.findById(dto.getDriverId())
                     .orElseThrow(() -> new AppObjectNotFound(
@@ -199,7 +194,7 @@ public class RouteService {
                     ));
 
             existingRoute.setDriver(driver);
-
+            existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.PENDING));
             // rebuild orders
             if (dto.getOrderIds() != null && !dto.getOrderIds().isEmpty()) {
 
@@ -228,6 +223,12 @@ public class RouteService {
                     existingRoute.addOrder(order);
                     orderRepository.save(order);
                 }
+            }
+            // sync orders status based on route status
+            switch (existingRoute.getStatus()) {
+                case PLANNED     -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.PENDING));
+                case IN_PROGRESS -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.SHIPPED));
+                case COMPLETED   -> existingRoute.getOrders().forEach(order -> order.setStatus(OrderStatus.DELIVERED));
             }
 
             Route updatedRoute = routeRepository.save(existingRoute);
