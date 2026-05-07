@@ -2,6 +2,7 @@ package com.project.ordermanagementsystem.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.project.ordermanagementsystem.model.Receipt;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,4 +26,6 @@ public class ResponseDTO {
     ProductReadOnlyDTO productReadOnlyDTO;
     @JsonProperty("route")
     RouteReadOnlyDTO routeReadOnlyDTO;
+    @JsonProperty("receipt")
+    ReceiptReadOnlyDTO receiptReadOnlyDTO;
 }

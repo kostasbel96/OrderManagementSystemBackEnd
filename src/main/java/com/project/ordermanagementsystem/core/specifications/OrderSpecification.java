@@ -169,6 +169,30 @@ public class OrderSpecification {
                     default -> cb.conjunction();
                 };
             }
+            // ---------------- PAYMENT STATUS ----------------
+            if ("paymentStatus".equals(field)) {
+
+                return switch (operator) {
+
+                    case "is" -> cb.equal(root.get("paymentStatus"), value);
+
+                    case "not" -> cb.notEqual(root.get("paymentStatus"), value);
+
+                    case "isAnyOf" -> {
+                        List<?> list = (List<?>) value;
+
+                        CriteriaBuilder.In<Object> in = cb.in(root.get("paymentStatus"));
+
+                        for (Object v : list) {
+                            in.value(v);
+                        }
+
+                        yield in;
+                    }
+
+                    default -> cb.conjunction();
+                };
+            }
 
             // ---------------- DATE FILTER ----------------
             if ("date".equals(field) || "createdAt".equals(field)) {

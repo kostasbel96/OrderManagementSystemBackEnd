@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "customers")
-public class Customer extends Person{
+public class Customer extends Person {
 
     private String email;
 
@@ -21,6 +21,9 @@ public class Customer extends Person{
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer")
+    private List<Receipt> receipts;
 
     public void addToBalance(BigDecimal amount) {
         if (balance == null) {

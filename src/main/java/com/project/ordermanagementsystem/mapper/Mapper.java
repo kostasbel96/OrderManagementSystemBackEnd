@@ -80,6 +80,18 @@ public class Mapper {
         return driver;
     }
 
+    public ReceiptReadOnlyDTO mapToReceiptReadOnlyDTO(Receipt receipt) {
+        ReceiptReadOnlyDTO dto = new ReceiptReadOnlyDTO();
+        dto.setId(receipt.getId());
+        dto.setCustomer(mapToCustomerReadOnlyDTO(receipt.getCustomer()));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        dto.setDate(receipt.getDate().format(formatter));
+        dto.setAmount(receipt.getAmount().toString());
+        dto.setNotes(receipt.getNotes());
+
+        return dto;
+    }
+
     public OrderReadOnlyDTO mapToOrderReadOnlyDTO(Order order){
         OrderReadOnlyDTO dto = new OrderReadOnlyDTO();
         dto.setId(order.getId());
@@ -89,8 +101,10 @@ public class Mapper {
         dto.setDate(order.getDate().format(formatter));
         dto.setStatus(order.getStatus());
         dto.setAddress(order.getAddress());
+        dto.setPaidAmount(order.getPaidAmount() != null ? order.getPaidAmount().toString() : "");
         order.calculateTotalAmount();
         dto.setTotal(order.getTotal().toString());
+        dto.setPaymentStatus(order.getPaymentStatus());
 
         return dto;
     }
