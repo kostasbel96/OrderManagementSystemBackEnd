@@ -29,6 +29,8 @@ public class Receipt extends AbstractEntity {
 
     private LocalDate date;
 
+    private Boolean active = true;
+
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
