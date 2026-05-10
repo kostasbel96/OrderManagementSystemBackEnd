@@ -59,6 +59,18 @@ public class Mapper {
         return dto;
     }
 
+    public Supplier mapToSupplierEntity(SupplierInsertDTO dto){
+        Supplier supplier = new Supplier();
+        supplier.setName(dto.getName());
+        supplier.setAddress(dto.getAddress());
+        supplier.setPhoneNumber1(dto.getPhoneNumber1());
+        supplier.setPhoneNumber2(dto.getPhoneNumber2());
+        supplier.setEmail(dto.getEmail());
+        supplier.setVatNumber(dto.getVat());
+
+        return supplier;
+    }
+
     public DriverReadOnlyDTO mapToDriverReadOnlyDTO(DriverPerson driver){
         DriverReadOnlyDTO dto = new DriverReadOnlyDTO();
         dto.setId(driver.getId());
@@ -78,6 +90,20 @@ public class Mapper {
         driver.setPhoneNumber2(dto.getPhoneNumber2());
 
         return driver;
+    }
+
+    public SupplierReadOnlyDTO mapToSupplierReadOnlyDTO(Supplier supplier) {
+        SupplierReadOnlyDTO dto = new SupplierReadOnlyDTO();
+        dto.setId(supplier.getId());
+        dto.setName(supplier.getName());
+        dto.setAddress(supplier.getAddress());
+        dto.setPhoneNumber1(supplier.getPhoneNumber1());
+        dto.setPhoneNumber2(supplier.getPhoneNumber2());
+        dto.setEmail(supplier.getEmail());
+        dto.setVat(supplier.getVatNumber());
+        dto.setBalance(supplier.getBalance() != null ? supplier.getBalance().toString() : "0.0");
+
+        return dto;
     }
 
     public ReceiptReadOnlyDTO mapToReceiptReadOnlyDTO(Receipt receipt) {

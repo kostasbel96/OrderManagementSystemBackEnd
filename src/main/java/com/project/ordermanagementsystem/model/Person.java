@@ -18,10 +18,6 @@ public abstract class Person extends AbstractEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    private String lastName;
-
     private String phoneNumber1;
 
     private String phoneNumber2;

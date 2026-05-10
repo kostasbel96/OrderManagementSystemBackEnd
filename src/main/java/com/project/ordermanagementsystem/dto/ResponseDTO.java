@@ -28,4 +28,6 @@ public class ResponseDTO {
     RouteReadOnlyDTO routeReadOnlyDTO;
     @JsonProperty("receipt")
     ReceiptReadOnlyDTO receiptReadOnlyDTO;
+    @JsonProperty("supplier")
+    SupplierReadOnlyDTO supplierReadOnlyDTO;
 }

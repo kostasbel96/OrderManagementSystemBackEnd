@@ -15,6 +15,10 @@ import java.util.List;
 @Table(name = "customers")
 public class Customer extends Person {
 
+    private String name;
+
+    private String lastName;
+
     private String email;
 
     private BigDecimal balance = BigDecimal.valueOf(0.0);

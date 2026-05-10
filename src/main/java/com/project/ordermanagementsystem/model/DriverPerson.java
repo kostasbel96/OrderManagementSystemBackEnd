@@ -17,6 +17,10 @@ import java.util.List;
 @Table(name = "drivers")
 public class DriverPerson extends Person{
 
+    private String name;
+
+    private String lastName;
+
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Route> routes = new ArrayList<>();
 
