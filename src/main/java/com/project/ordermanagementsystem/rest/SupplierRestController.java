@@ -1,10 +1,10 @@
 package com.project.ordermanagementsystem.rest;
 
-import com.project.ordermanagementsystem.dto.ResponseDTO;
-import com.project.ordermanagementsystem.dto.SupplierInsertDTO;
+import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.SupplierService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -30,5 +30,10 @@ public class SupplierRestController {
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
+    @PostMapping("/suppliers/search")
+    public ResponseEntity<Page<SupplierReadOnlyDTO>> searchSuppliers(@RequestBody SearchRequest request){
+        Page<SupplierReadOnlyDTO> responseDto= supplierService.searchSuppliers(request);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
 
 }

@@ -2,10 +2,9 @@ package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.dto.CustomerInsertDTO;
-import com.project.ordermanagementsystem.dto.ErrorResponse;
-import com.project.ordermanagementsystem.dto.ResponseDTO;
-import com.project.ordermanagementsystem.dto.SupplierInsertDTO;
+import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
+import com.project.ordermanagementsystem.core.specifications.SupplierSpecification;
+import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.mapper.Mapper;
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.model.Supplier;
@@ -14,6 +13,11 @@ import com.project.ordermanagementsystem.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -58,6 +62,34 @@ public class SupplierService {
             responseDTO.setErrorResponse(errorResponse);
         }
         return responseDTO;
+    }
+
+    public Page<SupplierReadOnlyDTO> searchSuppliers(SearchRequest request) {
+
+        Pageable pageable = PageRequest.of(
+                request.getPage(),
+                request.getPageSize(),
+                Sort.by(
+                        Sort.Direction.fromString(request.getSort().getSort()),
+                        request.getSort().getField()
+                )
+        );
+
+        Specification<Supplier> spec = Specification.where(SupplierSpecification.isActive());
+
+        if (request.getGlobalSearch() != null && !request.getGlobalSearch().isBlank()) {
+            spec = spec.and(SupplierSpecification.globalSearch(request.getGlobalSearch()));
+        }
+
+        if (request.getFilters() != null) {
+            for (FilterRequest filter : request.getFilters()) {
+                spec = spec.and(SupplierSpecification.fromFilter(filter));
+            }
+        }
+
+        Page<Supplier> supplierPage = supplierRepository.findAll(spec, pageable);
+
+        return supplierPage.map(mapper::mapToSupplierReadOnlyDTO);
     }
 
 }
