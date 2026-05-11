@@ -1,6 +1,7 @@
 package com.project.ordermanagementsystem.service;
 
 import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
+import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.specifications.SupplierSpecification;
@@ -92,4 +93,71 @@ public class SupplierService {
         return supplierPage.map(mapper::mapToSupplierReadOnlyDTO);
     }
 
+    @Transactional
+    public ResponseDTO updateSupplier(SupplierUpdateDTO dto, BindingResult bindingResult) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Supplier existingSupplier;
+        try {
+            existingSupplier = supplierRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound(
+                            "SupplierNotFound",
+                            String.format("Supplier with id: %s not found.", dto.getId())
+                    ));
+
+            existingSupplier.setId(dto.getId());
+            existingSupplier.setName(dto.getName());
+            existingSupplier.setEmail(dto.getEmail());
+            existingSupplier.setVatNumber(dto.getVat());
+            existingSupplier.setAddress(dto.getAddress());
+            existingSupplier.setPhoneNumber1(dto.getPhoneNumber1());
+            existingSupplier.setPhoneNumber2(dto.getPhoneNumber2());
+
+            if (bindingResult.hasErrors()) {
+                throw new ValidationException(bindingResult);
+            }
+
+            Supplier updatedSupplier = supplierRepository.save(existingSupplier);
+            responseDTO.setSupplierReadOnlyDTO(mapper.mapToSupplierReadOnlyDTO(updatedSupplier));
+            LOGGER.info("Supplier with id: {} updated successfully.", updatedSupplier.getId());
+
+        } catch (AppObjectNotFound e) {
+            LOGGER.error(e.getMessage());
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+        } catch (ValidationException e) {
+            LOGGER.error(e.getMessage());
+            responseDTO.setErrorResponse(new ErrorResponse(e.getBindingResult().getFieldError().getDefaultMessage()));
+        }
+
+        return responseDTO;
+    }
+
+    @Transactional
+    public ResponseDTO deleteSupplier(SupplierUpdateDTO dto) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Supplier supplierToDelete;
+        try {
+            supplierToDelete = supplierRepository.findById(dto.getId())
+                    .orElseThrow(() -> new AppObjectNotFound("SupplierNotFound",
+                            String.format("Supplier with id: %s not found.", dto.getId())));
+
+            if (!supplierToDelete.getPurchaseOrders().isEmpty()) {
+                supplierToDelete.setActive(false);
+                supplierRepository.save(supplierToDelete);
+            } else {
+                supplierRepository.delete(supplierToDelete);
+            }
+
+            SupplierReadOnlyDTO returnedSupplier = mapper.mapToSupplierReadOnlyDTO(supplierToDelete);
+            responseDTO.setSupplierReadOnlyDTO(returnedSupplier);
+            LOGGER.info("Supplier with id: {} deleted successfully.", returnedSupplier.getId());
+
+        } catch (AppObjectNotFound e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            responseDTO.setErrorResponse(errorResponse);
+            LOGGER.error(e.getMessage());
+        }
+
+        return responseDTO;
+    }
 }

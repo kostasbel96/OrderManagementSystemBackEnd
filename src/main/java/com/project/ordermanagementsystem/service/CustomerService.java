@@ -114,6 +114,7 @@ public class CustomerService {
 
     }
 
+    @Transactional
     public ResponseDTO updateCustomer(CustomerUpdateDTO dto, BindingResult bindingResult) {
         ResponseDTO responseDTO = new ResponseDTO();
         Customer existingCustomer;
