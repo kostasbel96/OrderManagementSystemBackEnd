@@ -1,13 +1,11 @@
 package com.project.ordermanagementsystem.core.specifications;
 
+import com.project.ordermanagementsystem.core.utils.SpecificationUtils;
 import com.project.ordermanagementsystem.dto.FilterRequest;
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.model.Receipt;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class ReceiptSpecification {
 
@@ -32,7 +30,7 @@ public class ReceiptSpecification {
                 );
             }
 
-            String normalized = normalizeGreek(value.toLowerCase().trim());
+            String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
             // Customer fields
@@ -108,12 +106,12 @@ public class ReceiptSpecification {
 
             // Amount filter
             if ("amount".equals(field)) {
-                return numericFilter(root, cb, field, operator, value);
+                return SpecificationUtils.numericFilter(root, cb, field, operator, value);
             }
 
             // Date filter
             if ("date".equals(field) || "createdAt".equals(field)) {
-                return dateFilter(root, cb, field, operator, value);
+                return SpecificationUtils.dateFilter(root, cb, field, operator, value);
             }
 
             // String filters
@@ -137,47 +135,15 @@ public class ReceiptSpecification {
                 );
                 case "equals" -> cb.equal(
                         expression,
-                        castValue(expression, value.toString())
+                        SpecificationUtils.castValue(expression, value.toString())
                 );
                 case "doesNotEqual" -> cb.notEqual(
                         expression,
-                        castValue(expression, value.toString())
+                        SpecificationUtils.castValue(expression, value.toString())
                 );
                 default -> cb.conjunction();
             };
         };
-    }
-
-    private static Predicate numericFilter(Root<Receipt> root, CriteriaBuilder cb, String field, String operator, Object value) {
-        return switch (operator) {
-            case "=" -> cb.equal(root.get(field), new BigDecimal(value.toString()));
-            case ">" -> cb.greaterThan(root.get(field), new BigDecimal(value.toString()));
-            case ">=" -> cb.greaterThanOrEqualTo(root.get(field), new BigDecimal(value.toString()));
-            case "<" -> cb.lessThan(root.get(field), new BigDecimal(value.toString()));
-            case "<=" -> cb.lessThanOrEqualTo(root.get(field), new BigDecimal(value.toString()));
-            default -> cb.conjunction();
-        };
-    }
-
-    private static Predicate dateFilter(Root<Receipt> root, CriteriaBuilder cb, String field, String operator, Object value) {
-        LocalDateTime date = parseDate(value.toString());
-        return switch (operator) {
-            case "is" -> cb.equal(root.get(field), date);
-            case "after" -> cb.greaterThan(root.get(field), date);
-            case "before" -> cb.lessThan(root.get(field), date);
-            default -> cb.conjunction();
-        };
-    }
-
-    private static Object castValue(Expression<?> expression, String value) {
-        Class<?> type = expression.getJavaType();
-        if (value == null) return null;
-        if (type.equals(String.class)) return value;
-        if (type.equals(Integer.class)) return Integer.valueOf(value);
-        if (type.equals(Long.class)) return Long.valueOf(value);
-        if (type.equals(BigDecimal.class)) return new BigDecimal(value);
-        if (type.equals(Boolean.class)) return Boolean.valueOf(value);
-        return value;
     }
 
     public static Specification<Receipt> isActive() {
@@ -201,17 +167,5 @@ public class ReceiptSpecification {
             case "equals" -> cb.equal(cb.lower(customer.get("name")), value.toLowerCase());
             default -> cb.conjunction();
         };
-    }
-
-    private static LocalDateTime parseDate(String value) {
-        try {
-            return LocalDateTime.parse(value);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid date: " + value);
-        }
-    }
-
-    private static String normalizeGreek(String input) {
-        return input.toLowerCase().replace("ς", "σ");
     }
 }

@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.core.specifications;
 
+import com.project.ordermanagementsystem.core.utils.SpecificationUtils;
 import com.project.ordermanagementsystem.dto.FilterRequest;
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.model.Order;
@@ -25,8 +26,6 @@ public class OrderSpecification {
                 return cb.conjunction();
             }
 
-
-
             Join<Order, Customer> customer = root.join("customer", JoinType.LEFT);
 
             query.distinct(true);
@@ -37,7 +36,7 @@ public class OrderSpecification {
                 return cb.equal(customer.get("id"), id);
             }
 
-            String normalized = normalizeGreek(value.toLowerCase().trim());
+            String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
             // ---------------- CUSTOMER FIELDS ----------------
@@ -197,7 +196,7 @@ public class OrderSpecification {
             // ---------------- DATE FILTER ----------------
             if ("date".equals(field) || "createdAt".equals(field)) {
 
-                LocalDateTime date = parseDate(value.toString());
+                LocalDateTime date = SpecificationUtils.parseDate(value.toString());
 
                 return switch (operator) {
 
@@ -244,12 +243,12 @@ public class OrderSpecification {
 
                 case "equals" -> cb.equal(
                         expression,
-                        castValue(expression, value.toString())
+                        SpecificationUtils.castValue(expression, value.toString())
                 );
 
                 case "doesNotEqual" -> cb.notEqual(
                         expression,
-                        castValue(expression, value.toString())
+                        SpecificationUtils.castValue(expression, value.toString())
                 );
 
                 // ---------------- NULL / EMPTY ----------------
@@ -273,7 +272,7 @@ public class OrderSpecification {
 
                     CriteriaBuilder.In<Object> in = cb.in(expression);
                     for (String v : values) {
-                        in.value(castValue(expression, v));
+                        in.value(SpecificationUtils.castValue(expression, v));
                     }
 
                     yield in;
@@ -282,65 +281,39 @@ public class OrderSpecification {
                 // ---------------- NUMERIC / COMPARISON ----------------
                 case "=" -> cb.equal(
                         root.get(field),
-                        castValue(root.get(field), value.toString())
+                        SpecificationUtils.castValue(root.get(field), value.toString())
                 );
 
                 case ">" -> cb.greaterThan(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value.toString())
+                        (Comparable) SpecificationUtils.castValue(root.get(field), value.toString())
                 );
 
                 case ">=" -> cb.greaterThanOrEqualTo(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value.toString())
+                        (Comparable) SpecificationUtils.castValue(root.get(field), value.toString())
                 );
 
                 case "<" -> cb.lessThan(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value.toString())
+                        (Comparable) SpecificationUtils.castValue(root.get(field), value.toString())
                 );
 
                 case "<=" -> cb.lessThanOrEqualTo(
                         root.get(field),
-                        (Comparable) castValue(root.get(field), value.toString())
+                        (Comparable) SpecificationUtils.castValue(root.get(field), value.toString())
                 );
 
                 // ---------------- NOT EQUAL (extra safety) ----------------
                 case "!=" -> cb.notEqual(
                         expression,
-                        castValue(expression, value.toString())
+                        SpecificationUtils.castValue(expression, value.toString())
                 );
 
                 // ---------------- DEFAULT ----------------
                 default -> cb.conjunction();
             };
         };
-    }
-
-    // ---------------- TYPE CASTING ----------------
-    private static Object castValue(Expression<?> expression, String value) {
-
-        Class<?> type = expression.getJavaType();
-
-        if (value == null) return null;
-
-        if (type.equals(String.class)) return value;
-
-        if (type.equals(Integer.class)) return Integer.valueOf(value);
-
-        if (type.equals(Long.class)) return Long.valueOf(value);
-
-        if (type.equals(Double.class)) return Double.valueOf(value);
-
-        if (type.equals(BigDecimal.class)) return new BigDecimal(value);
-
-        if (type.equals(Boolean.class)) return Boolean.valueOf(value);
-
-        if (type.isEnum()) {
-            return Enum.valueOf((Class<Enum>) type, value);
-        }
-
-        return value;
     }
 
     public static Specification<Order> isActive() {
@@ -437,26 +410,6 @@ public class OrderSpecification {
                     cb.like(cb.lower(customer.get("lastName")), like)
             );
         };
-    }
-
-    private static LocalDateTime parseDate(String value) {
-        try {
-            return LocalDateTime.parse(value);
-        } catch (Exception e) {
-            try {
-                return java.time.Instant.parse(value)
-                        .atZone(java.time.ZoneId.systemDefault())
-                        .toLocalDateTime();
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("Invalid date: " + value);
-            }
-        }
-    }
-
-    private static String normalizeGreek(String input) {
-        return input
-                .toLowerCase()
-                .replace("ς", "σ");
     }
 
 }

@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.core.specifications;
 
+import com.project.ordermanagementsystem.core.utils.SpecificationUtils;
 import com.project.ordermanagementsystem.dto.FilterRequest;
 import com.project.ordermanagementsystem.model.DriverPerson;
 import com.project.ordermanagementsystem.model.Route;
@@ -30,7 +31,7 @@ public class RouteSpecification {
 
             Join<Route, DriverPerson> driver = root.join("driver", JoinType.LEFT);
 
-            String normalized = normalize(value.toLowerCase().trim());
+            String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
             return cb.or(
@@ -99,7 +100,7 @@ public class RouteSpecification {
             // ---------------- DATE FILTER ----------------
             if ("date".equals(field) || "createdAt".equals(field)) {
 
-                LocalDateTime date = parseDate(value.toString());
+                LocalDateTime date = SpecificationUtils.parseDate(value.toString());
 
                 return switch (operator) {
 
@@ -190,23 +191,4 @@ public class RouteSpecification {
         };
     }
 
-    // ---------------- DATE PARSER ----------------
-    private static LocalDateTime parseDate(String value) {
-        try {
-            return LocalDateTime.parse(value);
-        } catch (Exception e) {
-            try {
-                return java.time.Instant.parse(value)
-                        .atZone(java.time.ZoneId.systemDefault())
-                        .toLocalDateTime();
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("Invalid date: " + value);
-            }
-        }
-    }
-
-    // ---------------- NORMALIZATION ----------------
-    private static String normalize(String input) {
-        return input.replace("ς", "σ");
-    }
 }
