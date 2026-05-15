@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @Component
 @RequiredArgsConstructor
 public class Mapper {
@@ -44,6 +46,30 @@ public class Mapper {
         customer.setPhoneNumber2(dto.getPhoneNumber2());
 
         return customer;
+    }
+
+    public PurchaseOrderReadOnlyDTO mapToPurchaseOrderReadOnlyDTO(PurchaseOrder purchaseOrder) {
+        PurchaseOrderReadOnlyDTO dto = new PurchaseOrderReadOnlyDTO();
+        dto.setId(purchaseOrder.getId());
+        dto.setSupplier(mapToSupplierReadOnlyDTO(purchaseOrder.getSupplier()));
+        dto.setItems(purchaseOrder.getItems().stream().map(this::mapToPurchaseOrderItemReadOnlyDTO).toList());
+        dto.setStatus(purchaseOrder.getStatus());
+        dto.setTotal(purchaseOrder.getTotal().toString());
+        dto.setPaymentStatus(purchaseOrder.getPaymentStatus());
+        dto.setPaidAmount(purchaseOrder.getPaidAmount().toString());
+
+        return dto;
+    }
+
+    public PurchaseOrderItemReadOnlyDTO mapToPurchaseOrderItemReadOnlyDTO(PurchaseOrderItem purchaseOrderItem) {
+        PurchaseOrderItemReadOnlyDTO purchaseOrderItemReadOnlyDTO = new PurchaseOrderItemReadOnlyDTO();
+        purchaseOrderItemReadOnlyDTO.setId(purchaseOrderItem.getId());
+        purchaseOrderItemReadOnlyDTO.setProduct(mapToProductReadOnlyDTO(purchaseOrderItem.getProduct()));
+        purchaseOrderItemReadOnlyDTO.setQuantity(purchaseOrderItem.getQuantity());
+        BigDecimal price = purchaseOrderItem.getPrice();
+        purchaseOrderItemReadOnlyDTO.setPrice(price != null ? price.toString() : null);
+
+        return purchaseOrderItemReadOnlyDTO;
     }
 
     public CustomerReadOnlyDTO mapToCustomerReadOnlyDTO(Customer customer){
