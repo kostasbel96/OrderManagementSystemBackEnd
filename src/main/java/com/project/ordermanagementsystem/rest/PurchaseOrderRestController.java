@@ -1,16 +1,15 @@
 package com.project.ordermanagementsystem.rest;
 
-import com.project.ordermanagementsystem.core.exceptions.AppObjectInvalidQuantity;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-import com.project.ordermanagementsystem.dto.OrderInsertDTO;
 import com.project.ordermanagementsystem.dto.OrderReadOnlyDTO;
 import com.project.ordermanagementsystem.dto.PurchaseOrderInsertDTO;
 import com.project.ordermanagementsystem.dto.PurchaseOrderReadOnlyDTO;
-import com.project.ordermanagementsystem.service.OrderService;
+import com.project.ordermanagementsystem.dto.SearchRequest;
 import com.project.ordermanagementsystem.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -26,7 +25,7 @@ public class PurchaseOrderRestController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-    @PostMapping("purchase-orders/save")
+    @PostMapping("purchaseOrders/save")
     public ResponseEntity<PurchaseOrderReadOnlyDTO> saveOrder(
             @Valid @RequestBody PurchaseOrderInsertDTO purchaseOrderInsertDTO,
             BindingResult bindingResult) throws ValidationException,
@@ -40,6 +39,13 @@ public class PurchaseOrderRestController {
                 purchaseOrderService.savePurchaseOrder(purchaseOrderInsertDTO);
 
         return new ResponseEntity<>(orderReadOnlyDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("purchaseOrders/search")
+    public ResponseEntity<Page<PurchaseOrderReadOnlyDTO>> searchPurchaseOrders(@RequestBody SearchRequest request){
+
+        Page<PurchaseOrderReadOnlyDTO> responseDto = purchaseOrderService.searchPurchaseOrders(request);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }

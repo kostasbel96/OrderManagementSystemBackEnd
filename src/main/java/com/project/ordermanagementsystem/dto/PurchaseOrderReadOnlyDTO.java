@@ -29,4 +29,6 @@ public class PurchaseOrderReadOnlyDTO {
 
     private String paidAmount;
 
+    private String date;
+
 }

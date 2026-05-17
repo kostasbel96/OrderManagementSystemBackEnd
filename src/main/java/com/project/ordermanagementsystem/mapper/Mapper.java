@@ -57,6 +57,8 @@ public class Mapper {
         dto.setTotal(purchaseOrder.getTotal().toString());
         dto.setPaymentStatus(purchaseOrder.getPaymentStatus());
         dto.setPaidAmount(purchaseOrder.getPaidAmount().toString());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        dto.setDate(purchaseOrder.getDate().format(formatter));
 
         return dto;
     }
