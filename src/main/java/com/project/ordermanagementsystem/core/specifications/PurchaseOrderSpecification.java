@@ -27,12 +27,6 @@ public class PurchaseOrderSpecification {
 
             query.distinct(true);
 
-            // numeric search (supplier id)
-            if (value.matches("\\d+")) {
-                Long id = Long.parseLong(value);
-                return cb.equal(supplier.get("id"), id);
-            }
-
             String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
@@ -46,11 +40,12 @@ public class PurchaseOrderSpecification {
                     cb.literal("σ")
             );
 
-            // ---------------- ORDER FIELDS ----------------
+            // ---------------- SUPPLIER FIELDS ----------------
 
             Expression<String> phone1 = supplier.get("phoneNumber1").as(String.class);
             Expression<String> phone2 = supplier.get("phoneNumber2").as(String.class);
             Expression<String> email = supplier.get("email").as(String.class);
+            Expression<String> vat = supplier.get("vatNumber").as(String.class);
 
             return cb.or(
 
@@ -62,7 +57,10 @@ public class PurchaseOrderSpecification {
                     cb.like(phone2, like),
 
                     // SUPPLIER EMAIL
-                    cb.like(email, like)
+                    cb.like(email, like),
+
+                    // SUPPLIER VAT
+                    cb.like(vat, like)
             );
         };
     }
