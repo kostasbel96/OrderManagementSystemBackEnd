@@ -46,6 +46,10 @@ public class Product extends AbstractEntity{
         this.quantity -= quantity;
     }
 
+    public void decreaseStock(int quantity) {
+        this.quantity = this.quantity - quantity;
+    }
+
     public void increaseStock(int quantity) {
         this.quantity = this.quantity + quantity;
     }

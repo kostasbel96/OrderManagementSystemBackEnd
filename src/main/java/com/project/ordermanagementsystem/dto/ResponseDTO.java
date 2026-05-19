@@ -30,4 +30,11 @@ public class ResponseDTO {
     ReceiptReadOnlyDTO receiptReadOnlyDTO;
     @JsonProperty("supplier")
     SupplierReadOnlyDTO supplierReadOnlyDTO;
+    @JsonProperty("purchaseOrderItems")
+    List<PurchaseOrderReadOnlyDTO> purchaseOrderItems;
+    @JsonProperty("purchaseOrderItem")
+    PurchaseOrderReadOnlyDTO purchaseOrderReadOnlyDTO;
+
+
+
 }
