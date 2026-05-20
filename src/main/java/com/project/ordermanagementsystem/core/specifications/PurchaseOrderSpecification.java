@@ -30,6 +30,11 @@ public class PurchaseOrderSpecification {
             String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
+            // numeric search (supplier id)
+            if (value.matches("\\d+")) {
+                Long id = Long.parseLong(value);
+                return cb.equal(supplier.get("id"), id);
+            }
 
             // ---------------- NAME ----------------
             Expression<String> name = cb.function(

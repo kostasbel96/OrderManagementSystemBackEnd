@@ -30,6 +30,12 @@ public class OrderSpecification {
 
             query.distinct(true);
 
+            // numeric search (customer id)
+            if (value.matches("\\d+")) {
+                Long id = Long.parseLong(value);
+                return cb.equal(customer.get("id"), id);
+            }
+
             String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
