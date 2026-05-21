@@ -30,12 +30,6 @@ public class OrderSpecification {
 
             query.distinct(true);
 
-            // numeric search (customer id)
-            if (value.matches("\\d+")) {
-                Long id = Long.parseLong(value);
-                return cb.equal(customer.get("id"), id);
-            }
-
             String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
@@ -84,16 +78,21 @@ public class OrderSpecification {
             Expression<String> phone1 = customer.get("phoneNumber1").as(String.class);
             Expression<String> phone2 = customer.get("phoneNumber2").as(String.class);
 
+            if (value.matches("\\d+")) {
+                Long id = Long.parseLong(value);
+                return cb.or(
+                        cb.equal(customer.get("id"), id),
+                        cb.equal(phone1, value),
+                        cb.equal(phone2, value)
+                );
+            }
+
             return cb.or(
 
                     // CUSTOMER
                     cb.like(customerName, like),
                     cb.like(customerLastName, like),
                     cb.like(fullName, like),
-
-                    // PHONE
-                    cb.like(phone1, like),
-                    cb.like(phone2, like),
 
                     // ORDER
                     cb.like(address, like)

@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.service;
 
+import com.project.ordermanagementsystem.core.enums.OrderStatus;
 import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
 import com.project.ordermanagementsystem.core.exceptions.ValidationException;
 import com.project.ordermanagementsystem.core.specifications.ReceiptSpecification;
@@ -174,10 +175,12 @@ public class ReceiptService {
             for (ReceiptOrder ro : receipt.getReceiptOrders()) {
                 Order order = ro.getOrder();
 
-                BigDecimal paidToReverse = ro.getAmount();
-                order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
-                order.updatePaymentStatus();
-                orderRepository.save(order);
+                if (order.getStatus() != OrderStatus.DELIVERED) {
+                    BigDecimal paidToReverse = ro.getAmount();
+                    order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
+                    order.updatePaymentStatus();
+                    orderRepository.save(order);
+                }
             }
 
             customerRepository.save(customer);

@@ -1,9 +1,13 @@
 package com.project.ordermanagementsystem.security;
 
+import com.project.ordermanagementsystem.authentication.AuthService;
+import com.project.ordermanagementsystem.authentication.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,39 +29,54 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final AuthService authService;
+
+    public SecurityConfiguration(JwtAuthenticationFilter jwtAuthFilter,
+                                 @Lazy AuthService authService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.authService = authService;
+    }
+
     @Bean
-    public SecurityFilterChain securityFilterChainOld(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling((exceptions) -> exceptions
-                        .accessDeniedHandler(myCustomAccessDeniedHandler()))
-                .exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(myCustomAuthenticationEntryPoint()))
-                .authorizeHttpRequests(req -> req.requestMatchers("/**").permitAll() // Static resources ή οτιδήποτε άλλο
-                        //.authenticated()
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler(myCustomAccessDeniedHandler())
+                        .authenticationEntryPoint(myCustomAuthenticationEntryPoint())
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
-//                .authenticationProvider(authenticationProvider())
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(authService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
                 "http://192.168.*.*:5173",
                 "http://localhost:3000",
                 "https://ordermanagementsystemui.onrender.com"
         ));
-//        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.1.2:5173", "http://localhost:3000", "https://ordermanagementsystemui.onrender.com"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -74,7 +93,6 @@ public class SecurityConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(11);
-        //return NoOpPasswordEncoder.getInstance();
     }
 
     @Bean

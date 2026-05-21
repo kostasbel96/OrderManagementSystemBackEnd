@@ -34,8 +34,8 @@ public class Supplier extends Person {
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SupplierPayment> supplierPayments = new ArrayList<>();
+    @OneToMany(mappedBy = "supplier")
+    private List<Payment> supplierPayments = new ArrayList<>();
 
     public void addToBalance(BigDecimal amount) {
         if (balance == null) {
@@ -44,13 +44,4 @@ public class Supplier extends Person {
         balance = balance.add(amount);
     }
 
-    public void addPurchaseOrder(PurchaseOrder order) {
-        purchaseOrders.add(order);
-        order.setSupplier(this);
-    }
-
-    public void addSupplierPayment(SupplierPayment payment) {
-        supplierPayments.add(payment);
-        payment.setSupplier(this);
-    }
 }

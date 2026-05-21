@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.core.utils;
 
+import com.project.ordermanagementsystem.model.Payment;
 import com.project.ordermanagementsystem.model.Receipt;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
@@ -34,7 +35,7 @@ public class SpecificationUtils {
         }
     }
 
-    public static Predicate numericFilter(Root<Receipt> root, CriteriaBuilder cb, String field, String operator, Object value) {
+    public static Predicate numericFilter(Root<?> root, CriteriaBuilder cb, String field, String operator, Object value) {
         return switch (operator) {
             case "=" -> cb.equal(root.get(field), new BigDecimal(value.toString()));
             case ">" -> cb.greaterThan(root.get(field), new BigDecimal(value.toString()));
@@ -45,7 +46,8 @@ public class SpecificationUtils {
         };
     }
 
-    public static Predicate dateFilter(Root<Receipt> root, CriteriaBuilder cb, String field, String operator, Object value) {
+
+    public static Predicate dateFilter(Root<?> root, CriteriaBuilder cb, String field, String operator, Object value) {
         LocalDateTime date = parseDate(value.toString());
         return switch (operator) {
             case "is" -> cb.equal(root.get(field), date);

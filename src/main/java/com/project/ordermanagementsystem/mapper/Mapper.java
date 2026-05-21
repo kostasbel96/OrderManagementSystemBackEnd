@@ -146,6 +146,18 @@ public class Mapper {
         return dto;
     }
 
+    public PaymentReadOnlyDTO mapToPaymentReadOnlyDTO(Payment payment) {
+        PaymentReadOnlyDTO dto = new PaymentReadOnlyDTO();
+        dto.setId(payment.getId());
+        dto.setSupplier(mapToSupplierReadOnlyDTO(payment.getSupplier()));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        dto.setDate(payment.getDate().format(formatter));
+        dto.setAmount(payment.getAmount().toString());
+        dto.setNotes(payment.getNotes());
+
+        return dto;
+    }
+
     public OrderReadOnlyDTO mapToOrderReadOnlyDTO(Order order){
         OrderReadOnlyDTO dto = new OrderReadOnlyDTO();
         dto.setId(order.getId());

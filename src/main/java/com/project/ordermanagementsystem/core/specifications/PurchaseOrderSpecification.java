@@ -30,12 +30,6 @@ public class PurchaseOrderSpecification {
             String normalized = SpecificationUtils.normalizeGreek(value.toLowerCase().trim());
             String like = "%" + normalized + "%";
 
-            // numeric search (supplier id)
-            if (value.matches("\\d+")) {
-                Long id = Long.parseLong(value);
-                return cb.equal(supplier.get("id"), id);
-            }
-
             // ---------------- NAME ----------------
             Expression<String> name = cb.function(
                     "replace",
@@ -52,20 +46,23 @@ public class PurchaseOrderSpecification {
             Expression<String> email = supplier.get("email").as(String.class);
             Expression<String> vat = supplier.get("vatNumber").as(String.class);
 
+            if (value.matches("\\d+")) {
+                Long id = Long.parseLong(value);
+                return cb.or(
+                        cb.equal(supplier.get("id"), id),
+                        cb.equal(phone1, value),
+                        cb.equal(phone2, value),
+                        cb.equal(vat, value)
+                );
+            }
+
             return cb.or(
 
                     // SUPPLIER NAME
                     cb.like(name, like),
 
-                    // PHONE
-                    cb.like(phone1, like),
-                    cb.like(phone2, like),
-
                     // SUPPLIER EMAIL
-                    cb.like(email, like),
-
-                    // SUPPLIER VAT
-                    cb.like(vat, like)
+                    cb.like(email, like)
             );
         };
     }

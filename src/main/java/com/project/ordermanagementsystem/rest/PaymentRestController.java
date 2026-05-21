@@ -1,9 +1,8 @@
 package com.project.ordermanagementsystem.rest;
 
 import com.project.ordermanagementsystem.dto.*;
-import com.project.ordermanagementsystem.model.Receipt;
+import com.project.ordermanagementsystem.service.PaymentService;
 import com.project.ordermanagementsystem.service.ReceiptService;
-import com.project.ordermanagementsystem.service.RouteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,17 +14,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class ReceiptRestController {
+public class PaymentRestController {
 
 
-    private final ReceiptService receiptService;
+    private final PaymentService paymentService;
 
-    @PostMapping("receipts/save")
-    public ResponseEntity<ResponseDTO> saveReceipt(
-            @Valid @RequestBody ReceiptInsertDTO receiptInsertDTO,
+    @PostMapping("payments/save")
+    public ResponseEntity<ResponseDTO> savePayment(
+            @Valid @RequestBody PaymentInsertDTO paymentInsertDTO,
             BindingResult bindingResult) {
 
-        ResponseDTO responseDto = receiptService.saveReceipt(receiptInsertDTO, bindingResult);
+        ResponseDTO responseDto = paymentService.savePayment(paymentInsertDTO, bindingResult);
 
         if (responseDto.getErrorResponse() != null){
             return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
@@ -34,26 +33,26 @@ public class ReceiptRestController {
 
     }
 
-    @GetMapping("/receipts/{id}")
-    public ResponseEntity<ResponseDTO> getReceiptById(@PathVariable Long id){
-        ResponseDTO responseDto = receiptService.getReceiptById(id);
+    @GetMapping("/payments/{id}")
+    public ResponseEntity<ResponseDTO> getPaymentById(@PathVariable Long id){
+        ResponseDTO responseDto = paymentService.getPaymentById(id);
         if (responseDto.getErrorResponse() != null){
             return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @PostMapping("/receipts/search")
-    public ResponseEntity<Page<ReceiptReadOnlyDTO>> searchReceipts(@RequestBody SearchRequest request){
+    @PostMapping("/payments/search")
+    public ResponseEntity<Page<PaymentReadOnlyDTO>> searchPayments(@RequestBody SearchRequest request){
 
-        Page<ReceiptReadOnlyDTO> responseDto = receiptService.searchReceipts(request);
+        Page<PaymentReadOnlyDTO> responseDto = paymentService.searchPayments(request);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @DeleteMapping("/receipts/delete")
-    public ResponseEntity<ResponseDTO> deleteReceipt(@RequestBody ReceiptDeleteDTO dto) {
+    @DeleteMapping("/payments/delete")
+    public ResponseEntity<ResponseDTO> deletePayment(@RequestBody PaymentDeleteDTO dto) {
         ResponseDTO responseDTO;
-        responseDTO = receiptService.deleteReceipt(dto.getId());
+        responseDTO = paymentService.deletePayment(dto.getId());
         if (responseDTO.getErrorResponse() != null) {
             return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
         }
