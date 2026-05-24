@@ -10,13 +10,21 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public class OrderSpecification {
 
     private OrderSpecification(){
 
+    }
+
+    public static Specification<Order> totalOrdersByDate(LocalDate date) {
+        return (root, query, cb) -> cb.equal(
+                root.get("date"), date
+        );
     }
 
     public static Specification<Order> globalSearch(String value) {

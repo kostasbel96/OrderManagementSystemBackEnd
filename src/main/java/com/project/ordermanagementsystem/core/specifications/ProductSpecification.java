@@ -7,22 +7,32 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class ProductSpecification {
 
     private ProductSpecification() {}
 
+    public static Specification<Product> totalProductsByDate(LocalDate date) {
+        return (root, query, cb) -> cb.or(
+                cb.between(
+                        root.get("createdAt"),
+                        date.atStartOfDay(),
+                        date.atTime(LocalTime.MAX)
+                ),
+                cb.between(
+                        root.get("updatedAt"),
+                        date.atStartOfDay(),
+                        date.atTime(LocalTime.MAX)
+                )
+        );
+    }
+
     public static Specification<Product> stockLessThanOrEqual(int threshold) {
         return (root, query, cb) ->
                 cb.lessThanOrEqualTo(root.get("quantity"), threshold);
-    }
-
-    public static Specification<Product> orderByStockAsc() {
-        return (root, query, cb) -> {
-            query.orderBy(cb.asc(root.get("quantity")));
-            return cb.conjunction();
-        };
     }
 
     // ---------------- GLOBAL SEARCH ----------------

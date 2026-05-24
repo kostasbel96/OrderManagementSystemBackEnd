@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.rest;
 
+import com.project.ordermanagementsystem.dto.KpiCardDTO;
 import com.project.ordermanagementsystem.dto.StockLevelDTO;
 import com.project.ordermanagementsystem.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,11 @@ public class DashboardRestController {
     @GetMapping("dashboard/stockLevels/{threshold}")
     public ResponseEntity<List<StockLevelDTO>> getStockLevels(@PathVariable Integer threshold) {
         return new ResponseEntity<>(dashboardService.getStockLevels(threshold), HttpStatus.OK);
+    }
+
+    @GetMapping("dashboard/kpiCard/{threshold}")
+    public ResponseEntity<KpiCardDTO> getKpiCard(@PathVariable Integer threshold) {
+        return new ResponseEntity<>(dashboardService.getKpiCard(threshold), HttpStatus.OK);
     }
 
 }

@@ -7,13 +7,21 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class CustomerSpecification {
 
     private CustomerSpecification() {}
 
-
+    public static Specification<Customer> createdOn(LocalDate date) {
+        return (root, query, cb) -> cb.between(
+                root.get("createdAt"),
+                date.atStartOfDay(),
+                date.atTime(LocalTime.MAX)
+        );
+    }
 
     // ---------------- GLOBAL SEARCH ----------------
     public static Specification<Customer> globalSearch(String value) {
