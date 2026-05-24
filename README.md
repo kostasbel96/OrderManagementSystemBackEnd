@@ -105,8 +105,8 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.globally_quoted_identifiers=true
 
 # Admin User Credentials (set via environment variables)
-application.admin.username=${USERNAME}
-application.admin.password=${USER_PASSWORD}
+application.admin.username=admin
+application.admin.password=admin_password
 # Spring Data JPA
 spring.data.jpa.repositories.enabled=true
 spring.jpa.open-in-view=false
