@@ -76,11 +76,11 @@ public class DashboardService {
 
         Specification<Customer> specActive = Specification.where(CustomerSpecification.isActive());
         Specification<Customer> specActiveByDate = specActive.and(CustomerSpecification.createdOn(LocalDate.now()));
-        Specification<Customer> specActiveByYestersay = specActive.and(CustomerSpecification.createdOn(LocalDate.now().minusDays(1)));
+        Specification<Customer> specActiveByYesterday = specActive.and(CustomerSpecification.createdOn(LocalDate.now().minusDays(1)));
 
         long count = customerRepository.count();
         long countToday = customerRepository.count(specActiveByDate);
-        long countYesterday = customerRepository.count(specActiveByYestersay);
+        long countYesterday = customerRepository.count(specActiveByYesterday);
 
         long delta = countToday - countYesterday;
 
@@ -109,39 +109,43 @@ public class DashboardService {
     }
 
     private ProductKpiDTO buildProductKpiDTO(Integer threshold) {
-        Specification<Product> specActive = Specification.where(ProductSpecification.isActive());
-        Specification<Product> specActiveByDate = specActive.and(ProductSpecification.totalProductsByDate(LocalDate.now()));
-        Specification<Product> specActiveByYesterday = specActive.and(ProductSpecification.totalProductsByDate(LocalDate.now().minusDays(1)));
+        Specification<Product> specActive = Specification
+                .where(ProductSpecification.isActive());
 
-        Specification<Product> specActiveLowStockYesterday = specActive
-                .and(ProductSpecification.stockLessThanOrEqual(threshold))
-                .and(ProductSpecification.totalProductsByDate(LocalDate.now().minusDays(1)));
+        Specification<Product> specActiveByDate = specActive
+                .and(ProductSpecification.totalProductsByDate(LocalDate.now()));
+
+        Specification<Product> specUntilYesterday = specActive
+                .and(ProductSpecification.createdBefore(LocalDate.now()));
 
         Specification<Product> specActiveLowStockToday = specActive
                 .and(ProductSpecification.stockLessThanOrEqual(threshold))
                 .and(ProductSpecification.totalProductsByDate(LocalDate.now()));
 
+        Specification<Product> specLowStock = specActive
+                .and(ProductSpecification.stockLessThanOrEqual(threshold));
+
         long count = productRepository.count(specActive);
         long countToday = productRepository.count(specActiveByDate);
-        long countYesterday = productRepository.count(specActiveByYesterday);
-        long lowStockYesterday = productRepository.count(specActiveLowStockYesterday);
+        long countYesterday = productRepository.count(specUntilYesterday);
         long lowStockToday = productRepository.count(specActiveLowStockToday);
+        long lowStock = productRepository.count(specLowStock);
 
         double deltaPct;
-        if (countYesterday == 0 && countToday > 0) {
-            deltaPct = 100.0; // 100% αύξηση αν χθες ήταν 0
+        if (countYesterday == 0 && count > 0) {
+            deltaPct = 100.0;
         } else if (countYesterday == 0) {
             deltaPct = 0.0;
         } else {
-            deltaPct = ((double)(countToday - countYesterday) / countYesterday) * 100;
+            deltaPct = ((double)(count - countYesterday) / countYesterday) * 100;
         }
-        long productDelta = lowStockToday - lowStockYesterday;
 
-        return ProductKpiDTO.builder().totalProducts(count)
+        return ProductKpiDTO.builder()
+                .totalProducts(count)
                 .totalProductsByDate(countToday)
                 .deltaPercentage(Math.round(deltaPct * 10.0) / 10.0)
-                .productLowStock(lowStockToday)
-                .deltaLowStockByYesterday(productDelta)
+                .productLowStock(lowStock)
+                .deltaLowStockByYesterday(lowStockToday)
                 .build();
 
     }

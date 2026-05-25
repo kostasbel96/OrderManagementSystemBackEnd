@@ -30,6 +30,13 @@ public class ProductSpecification {
         );
     }
 
+    public static Specification<Product> createdBefore(LocalDate date) {
+        return (root, query, cb) -> cb.lessThan(
+                root.get("createdAt"),
+                date.atStartOfDay()
+        );
+    }
+
     public static Specification<Product> stockLessThanOrEqual(int threshold) {
         return (root, query, cb) ->
                 cb.lessThanOrEqualTo(root.get("quantity"), threshold);
