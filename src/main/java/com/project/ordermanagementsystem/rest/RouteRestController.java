@@ -1,10 +1,5 @@
 package com.project.ordermanagementsystem.rest;
 
-
-import com.project.ordermanagementsystem.core.exceptions.AppObjectAlreadyExists;
-import com.project.ordermanagementsystem.core.exceptions.AppObjectNotFound;
-import com.project.ordermanagementsystem.core.exceptions.ValidationException;
-
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.service.RouteService;
 import jakarta.validation.Valid;
@@ -22,7 +17,7 @@ public class RouteRestController {
 
     private final RouteService routeService;
 
-    @PostMapping("routes/save")
+    @PostMapping("/routes/save")
     public ResponseEntity<ResponseDTO> saveRoute(
             @Valid @RequestBody RouteInsertDTO routeInsertDTO,
             BindingResult bindingResult) {

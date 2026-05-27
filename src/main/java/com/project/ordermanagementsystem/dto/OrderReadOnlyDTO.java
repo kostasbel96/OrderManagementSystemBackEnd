@@ -34,4 +34,6 @@ public class OrderReadOnlyDTO {
     private PaymentStatus paymentStatus;
 
     private String deposit;
+
+    private Integer orderIndex;
 }

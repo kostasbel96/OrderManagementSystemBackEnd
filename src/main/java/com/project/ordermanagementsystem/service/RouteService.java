@@ -106,13 +106,13 @@ public class RouteService {
                             "DriverNotFound",
                             "Driver not found"
                     ));
-            List<Long> orderIds = dto.getOrderIds();
-            for (Long orderId : orderIds) {
-                Order order = orderRepository.findById(orderId)
+            List<RouteOrderDTO> orderIds = dto.getOrderIds();
+            for (RouteOrderDTO orderId : orderIds) {
+                Order order = orderRepository.findById(orderId.getId())
                         .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
 
                 if (order.getRoute() != null) {
-                    orderIdsExistInRoute.add(orderId);
+                    orderIdsExistInRoute.add(orderId.getId());
                 }
             }
 
@@ -134,14 +134,15 @@ public class RouteService {
 
             Route savedRoute = routeRepository.save(route);
 
-            for (Long orderId : orderIds) {
+            for (RouteOrderDTO orderId : orderIds) {
 
-                Order order = orderRepository.findById(orderId)
+                Order order = orderRepository.findById(orderId.getId())
                         .orElseThrow(() -> new AppObjectNotFound(
                                 "OrderNotFound",
                                 "Order not found"
                         ));
                 order.setStatus(OrderStatus.PENDING);
+                order.setOrderIndex(orderId.getOrderIndex());
                 savedRoute.addOrder(order);
                 orderRepository.save(order);
             }
@@ -197,12 +198,12 @@ public class RouteService {
             // rebuild orders
             if (dto.getOrderIds() != null && !dto.getOrderIds().isEmpty()) {
 
-                for (Long orderId : dto.getOrderIds()) {
-                    Order order = orderRepository.findById(orderId)
+                for (RouteOrderDTO orderId : dto.getOrderIds()) {
+                    Order order = orderRepository.findById(orderId.getId())
                             .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
 
                     if (order.getRoute() != null && !order.getRoute().getId().equals(existingRoute.getId())) {
-                        orderIdsExistInRoute.add(orderId);
+                        orderIdsExistInRoute.add(orderId.getId());
                     }
                 }
 
@@ -216,10 +217,11 @@ public class RouteService {
                 }
                 // store old orders (optional safety / reassign logic)
                 existingRoute.clearOrders();
-                for (Long orderId : dto.getOrderIds()) {
-                    Order order = orderRepository.findById(orderId)
+                for (RouteOrderDTO orderId : dto.getOrderIds()) {
+                    Order order = orderRepository.findById(orderId.getId())
                             .orElseThrow(() -> new AppObjectNotFound("OrderNotFound", "Order not found"));
                     existingRoute.addOrder(order);
+                    order.setOrderIndex(orderId.getOrderIndex());
                     orderRepository.save(order);
                 }
             }

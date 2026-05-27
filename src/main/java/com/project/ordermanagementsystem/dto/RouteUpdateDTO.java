@@ -31,7 +31,7 @@ public class RouteUpdateDTO {
     private RouteStatus status;
 
     @NotNull(message = "Orders for route is required.")
-    private List<Long> orderIds;
+    private List<RouteOrderDTO> orderIds;
 
     @NotNull(message = "Execution date is required.")
     private LocalDate date;

@@ -26,7 +26,7 @@ public class RouteInsertDTO {
 
     @NotNull(message = "Orders for route is required.")
     @NotEmpty(message = "Orders for route is required.")
-    private List<Long> orderIds;
+    private List<RouteOrderDTO> orderIds;
 
     @NotNull(message = "Execution date is required.")
     private LocalDate date;

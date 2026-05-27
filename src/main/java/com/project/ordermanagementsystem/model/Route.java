@@ -39,6 +39,7 @@ public class Route extends AbstractEntity{
     private DriverPerson driver;
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL)
+    @OrderBy("orderIndex ASC NULLS LAST")
     private List<Order> orders = new ArrayList<>();
 
     public void addOrder(Order order){

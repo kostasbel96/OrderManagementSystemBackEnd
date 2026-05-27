@@ -49,6 +49,8 @@ public class Order extends AbstractEntity{
 
     private BigDecimal total;
 
+    private Integer orderIndex;
+
     @OneToMany(mappedBy = "order")
     private List<ReceiptOrder> receiptOrders = new ArrayList<>();
 

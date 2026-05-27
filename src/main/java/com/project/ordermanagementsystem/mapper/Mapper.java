@@ -171,6 +171,7 @@ public class Mapper {
         order.calculateTotalAmount();
         dto.setTotal(order.getTotal().toString());
         dto.setPaymentStatus(order.getPaymentStatus());
+        dto.setOrderIndex(order.getOrderIndex());
 
         return dto;
     }

@@ -28,5 +28,7 @@ public class RouteReadOnlyDTO {
 
     private RouteStatus status;
 
+    private Integer orderIndex;
+
 
 }
