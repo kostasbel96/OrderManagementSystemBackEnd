@@ -19,6 +19,8 @@ public class KpiCardDTO {
     OrderKpiDTO orderKpiDTO;
     @JsonProperty("customerKpi")
     CustomerKpiDTO customerKpiDTO;
+    @JsonProperty("routeKpi")
+    RouteKpiDTO routeKpiDTO;
 
 
 }

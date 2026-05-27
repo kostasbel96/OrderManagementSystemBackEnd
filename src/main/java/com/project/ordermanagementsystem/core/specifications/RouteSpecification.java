@@ -7,12 +7,19 @@ import com.project.ordermanagementsystem.model.Route;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class RouteSpecification {
 
     private RouteSpecification() {}
+
+    public static Specification<Route> totalRoutesByDate(LocalDate date) {
+        return (root, query, cb) -> cb.equal(
+                root.get("date"), date
+        );
+    }
 
     // ---------------- ACTIVE ----------------
     public static Specification<Route> isActive() {

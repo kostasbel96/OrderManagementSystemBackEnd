@@ -3,13 +3,16 @@ package com.project.ordermanagementsystem.service;
 import com.project.ordermanagementsystem.core.specifications.CustomerSpecification;
 import com.project.ordermanagementsystem.core.specifications.OrderSpecification;
 import com.project.ordermanagementsystem.core.specifications.ProductSpecification;
+import com.project.ordermanagementsystem.core.specifications.RouteSpecification;
 import com.project.ordermanagementsystem.dto.*;
 import com.project.ordermanagementsystem.model.Customer;
 import com.project.ordermanagementsystem.model.Order;
 import com.project.ordermanagementsystem.model.Product;
+import com.project.ordermanagementsystem.model.Route;
 import com.project.ordermanagementsystem.repository.CustomerRepository;
 import com.project.ordermanagementsystem.repository.OrderRepository;
 import com.project.ordermanagementsystem.repository.ProductRepository;
+import com.project.ordermanagementsystem.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,7 @@ public class DashboardService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DashboardService.class);
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
+    private final RouteRepository routeRepository;
 
 
     public List<StockLevelDTO> getStockLevels(Integer threshold) {
@@ -68,8 +72,26 @@ public class DashboardService {
         kpiCardDTO.setProductKpiDTO(buildProductKpiDTO(threshold));
         kpiCardDTO.setOrderKpiDTO(buildOrderKpiDTO());
         kpiCardDTO.setCustomerKpiDTO(buildCustomerKpiDTO());
+        kpiCardDTO.setRouteKpiDTO(buildRouteKpiDTO());
         LOGGER.info("Kpi Card retrieved successfully.");
         return kpiCardDTO;
+    }
+
+    private RouteKpiDTO buildRouteKpiDTO() {
+        Specification<Route> specActive = Specification.where(RouteSpecification.isActive());
+        Specification<Route> specActiveByDate = specActive.and(RouteSpecification.totalRoutesByDate(LocalDate.now()));
+        Specification<Route> specActiveByDateYesterday = specActive.and(RouteSpecification.totalRoutesByDate(LocalDate.now().minusDays(1)));
+
+        long countToday = routeRepository.count(specActiveByDate);
+        long countYesterday = routeRepository.count(specActiveByDateYesterday);
+
+        long delta = countToday - countYesterday;
+
+        return RouteKpiDTO
+                .builder()
+                .deltaRoutesByYesterday(delta)
+                .totalRoutesByDate(countToday)
+                .build();
     }
 
     private CustomerKpiDTO buildCustomerKpiDTO() {
