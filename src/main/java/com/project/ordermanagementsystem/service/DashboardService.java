@@ -100,7 +100,7 @@ public class DashboardService {
         Specification<Customer> specActiveByDate = specActive.and(CustomerSpecification.createdOn(LocalDate.now()));
         Specification<Customer> specActiveByYesterday = specActive.and(CustomerSpecification.createdOn(LocalDate.now().minusDays(1)));
 
-        long count = customerRepository.count();
+        long count = customerRepository.count(specActive);
         long countToday = customerRepository.count(specActiveByDate);
         long countYesterday = customerRepository.count(specActiveByYesterday);
 
