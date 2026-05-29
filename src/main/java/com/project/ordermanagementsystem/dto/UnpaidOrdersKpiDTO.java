@@ -7,9 +7,9 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class CustomerKpiDTO {
+public class UnpaidOrdersKpiDTO {
 
-    private Long totalCustomers;
-    private Long deltaCustomersByYesterday;
+    private Long totalOrders;
+    private Long deltaUnpaidOrdersByYesterday;
 
 }

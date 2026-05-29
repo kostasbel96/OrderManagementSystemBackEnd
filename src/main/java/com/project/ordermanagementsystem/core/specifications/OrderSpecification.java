@@ -1,5 +1,6 @@
 package com.project.ordermanagementsystem.core.specifications;
 
+import com.project.ordermanagementsystem.core.enums.PaymentStatus;
 import com.project.ordermanagementsystem.core.utils.SpecificationUtils;
 import com.project.ordermanagementsystem.dto.FilterRequest;
 import com.project.ordermanagementsystem.model.Customer;
@@ -19,6 +20,13 @@ public class OrderSpecification {
 
     private OrderSpecification(){
 
+    }
+
+    public static Specification<Order> unpaidOrdersUntilDate(LocalDate date) {
+        return (root, query, cb) -> cb.and(
+                cb.notEqual(root.get("paymentStatus"), PaymentStatus.PAID),
+                cb.lessThanOrEqualTo(root.get("date"), date)
+        );
     }
 
     public static Specification<Order> totalOrdersByDate(LocalDate date) {

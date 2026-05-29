@@ -71,7 +71,7 @@ public class DashboardService {
         KpiCardDTO kpiCardDTO = new KpiCardDTO();
         kpiCardDTO.setProductKpiDTO(buildProductKpiDTO(threshold));
         kpiCardDTO.setOrderKpiDTO(buildOrderKpiDTO());
-        kpiCardDTO.setCustomerKpiDTO(buildCustomerKpiDTO());
+        kpiCardDTO.setUnpaidOrdersKpiDTO(buildUnpaidOrdersKpiDTO());
         kpiCardDTO.setRouteKpiDTO(buildRouteKpiDTO());
         LOGGER.info("Kpi Card retrieved successfully.");
         return kpiCardDTO;
@@ -94,24 +94,23 @@ public class DashboardService {
                 .build();
     }
 
-    private CustomerKpiDTO buildCustomerKpiDTO() {
+    private UnpaidOrdersKpiDTO buildUnpaidOrdersKpiDTO() {
+        Specification<Order> specActive = Specification.where(OrderSpecification.isActive());
+        Specification<Order> specUnpaidOrdersUntilToday = specActive.and(OrderSpecification.unpaidOrdersUntilDate(LocalDate.now()));
+        Specification<Order> specUnpaidOrdersUntilYesterday = specActive.and(OrderSpecification.unpaidOrdersUntilDate(LocalDate.now().minusDays(1)));
 
-        Specification<Customer> specActive = Specification.where(CustomerSpecification.isActive());
-        Specification<Customer> specActiveByDate = specActive.and(CustomerSpecification.createdOn(LocalDate.now()));
-        Specification<Customer> specActiveByYesterday = specActive.and(CustomerSpecification.createdOn(LocalDate.now().minusDays(1)));
-
-        long count = customerRepository.count(specActive);
-        long countToday = customerRepository.count(specActiveByDate);
-        long countYesterday = customerRepository.count(specActiveByYesterday);
+        long countToday = orderRepository.count(specUnpaidOrdersUntilToday);
+        long countYesterday = orderRepository.count(specUnpaidOrdersUntilYesterday);
 
         long delta = countToday - countYesterday;
 
-        return CustomerKpiDTO
-                .builder()
-                .totalCustomers(count)
-                .deltaCustomersByYesterday(delta)
+        return UnpaidOrdersKpiDTO.
+                builder()
+                .totalOrders(countToday)
+                .deltaUnpaidOrdersByYesterday(delta)
                 .build();
     }
+
 
     private OrderKpiDTO buildOrderKpiDTO() {
         Specification<Order> specActive = Specification.where(OrderSpecification.isActive());
