@@ -23,7 +23,7 @@ public class SupplierReadOnlyDTO {
 
     private String email;
 
-    private String vat;
+    private String vatNumber;
 
     private String balance;
 }

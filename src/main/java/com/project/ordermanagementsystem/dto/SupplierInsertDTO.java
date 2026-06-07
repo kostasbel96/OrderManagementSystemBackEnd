@@ -24,7 +24,7 @@ public class SupplierInsertDTO {
 
     @NotNull(message = "Supplier VAT number is required")
     @Min(value = 10, message = "VAT number must be at least 10 characters long")
-    private String vat;
+    private String vatNumber;
 
     @Email(message = "Supplier email is invalid")
     private String email;

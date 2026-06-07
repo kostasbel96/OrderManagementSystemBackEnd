@@ -94,7 +94,7 @@ public class Mapper {
         supplier.setPhoneNumber1(dto.getPhoneNumber1());
         supplier.setPhoneNumber2(dto.getPhoneNumber2());
         supplier.setEmail(dto.getEmail());
-        supplier.setVatNumber(dto.getVat());
+        supplier.setVatNumber(dto.getVatNumber());
 
         return supplier;
     }
@@ -128,7 +128,7 @@ public class Mapper {
         dto.setPhoneNumber1(supplier.getPhoneNumber1());
         dto.setPhoneNumber2(supplier.getPhoneNumber2());
         dto.setEmail(supplier.getEmail());
-        dto.setVat(supplier.getVatNumber());
+        dto.setVatNumber(supplier.getVatNumber());
         dto.setBalance(supplier.getBalance() != null ? supplier.getBalance().toString() : "0.0");
 
         return dto;

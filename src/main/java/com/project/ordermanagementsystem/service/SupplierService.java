@@ -41,10 +41,10 @@ public class SupplierService {
                 throw new ValidationException(bindingResult);
             }
 
-            if (supplierRepository.existsByVatNumberAndActiveTrue(dto.getVat())) {
+            if (supplierRepository.existsByVatNumberAndActiveTrue(dto.getVatNumber())) {
                 throw new AppObjectAlreadyExists(
                         "SupplierVatNumber",
-                        "Supplier with vat number " + dto.getVat() + " already exists."
+                        "Supplier with vat number " + dto.getVatNumber() + " already exists."
                 );
             }
 
@@ -107,7 +107,7 @@ public class SupplierService {
             existingSupplier.setId(dto.getId());
             existingSupplier.setName(dto.getName());
             existingSupplier.setEmail(dto.getEmail());
-            existingSupplier.setVatNumber(dto.getVat());
+            existingSupplier.setVatNumber(dto.getVatNumber());
             existingSupplier.setAddress(dto.getAddress());
             existingSupplier.setPhoneNumber1(dto.getPhoneNumber1());
             existingSupplier.setPhoneNumber2(dto.getPhoneNumber2());
