@@ -51,7 +51,7 @@ public class SecurityConfiguration {
                         .authenticationEntryPoint(myCustomAuthenticationEntryPoint())
                 )
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
