@@ -175,12 +175,10 @@ public class ReceiptService {
             for (ReceiptOrder ro : receipt.getReceiptOrders()) {
                 Order order = ro.getOrder();
 
-                if (order.getStatus() != OrderStatus.DELIVERED) {
-                    BigDecimal paidToReverse = ro.getAmount();
-                    order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
-                    order.updatePaymentStatus();
-                    orderRepository.save(order);
-                }
+                BigDecimal paidToReverse = ro.getAmount();
+                order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
+                order.updatePaymentStatus();
+                orderRepository.save(order);
             }
 
             customerRepository.save(customer);

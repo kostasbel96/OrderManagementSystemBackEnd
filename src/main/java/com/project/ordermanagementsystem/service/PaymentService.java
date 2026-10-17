@@ -171,12 +171,10 @@ public class PaymentService {
             for (PaymentPurchaseOrder po : payment.getPaymentOrders()) {
                 PurchaseOrder order = po.getPurchaseOrder();
 
-                if (order.getStatus() != OrderStatus.DELIVERED){
-                    BigDecimal paidToReverse = po.getAmount();
-                    order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
-                    order.updatePaymentStatus();
-                    purchaseOrderRepository.save(order);
-                }
+                BigDecimal paidToReverse = po.getAmount();
+                order.setPaidAmount(order.getPaidAmount().subtract(paidToReverse));
+                order.updatePaymentStatus();
+                purchaseOrderRepository.save(order);
 
             }
 
